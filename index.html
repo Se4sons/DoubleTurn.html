@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Battleforge — Age of Sigmar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,400&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d0d10;--surf:#141418;--surf2:#1c1c22;--surf3:#24242c;--bdr:#2e2e3a;
+  --gold:#c9922a;--goldd:#7a5818;--red:#8b2020;--red2:#c0392b;
+  --txt:#e8e0d0;--txtd:#9a9080;--txtf:#5a5448;--acc2:#5b9fc0;
+  --grn:#2a6b3a;--grn2:#4caf6a;
+}
+html,body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:'Crimson Pro',Georgia,serif;font-size:15px}
+body{background-image:radial-gradient(ellipse at 15% 0%,rgba(201,146,42,.05) 0%,transparent 55%),radial-gradient(ellipse at 85% 100%,rgba(58,107,138,.05) 0%,transparent 55%)}
+::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--goldd);border-radius:3px}
+@keyframes fadeIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+@keyframes diceAnim{0%{transform:rotate(0)scale(1)}50%{transform:rotate(180deg)scale(1.3)}100%{transform:rotate(360deg)scale(1)}}
+.page{max-width:960px;margin:0 auto;padding:0 0 60px}
+.hdr{padding:22px 22px 16px;border-bottom:1px solid var(--bdr);background:linear-gradient(to bottom,rgba(201,146,42,.06),transparent);position:relative}
+.hdr-eye{color:var(--gold);font-family:'Cinzel',serif;font-size:10px;letter-spacing:4px;text-transform:uppercase;margin-bottom:4px}
+.hdr-title{font-family:'Cinzel',serif;font-size:26px;font-weight:900;color:var(--txt);letter-spacing:3px}
+.hdr-title span{color:var(--gold)}
+.hdr-sub{color:var(--txtf);font-size:12px;font-style:italic;margin-top:3px}
+/* Save selector in header */
+.save-bar{display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap}
+.save-label{color:var(--txtd);font-family:'Cinzel',serif;font-size:10px;letter-spacing:1px;text-transform:uppercase}
+.save-btn{background:var(--surf2);border:1px solid var(--bdr);color:var(--txtd);border-radius:3px;padding:4px 10px;cursor:pointer;font-family:'Cinzel',serif;font-size:11px;font-weight:700;transition:all .2s}
+.save-btn.on{background:var(--gold);color:#0d0d10;border-color:var(--gold)}
+.save-hint{color:var(--txtf);font-size:11px;font-style:italic}
+/* Tabs */
+.tabs{display:flex;background:var(--surf);border-bottom:1px solid var(--bdr);position:sticky;top:0;z-index:50}
+.tab{flex:1;padding:11px 4px;background:none;border:none;border-bottom:2px solid transparent;color:var(--txtd);font-family:'Cinzel',serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all .2s;font-weight:700}
+.tab.on{border-bottom-color:var(--gold);color:var(--gold)}
+.tab-icon{font-size:13px;margin-bottom:2px;display:block}
+.content{padding:20px 20px;animation:fadeIn .3s ease}
+/* Cards */
+.dcard{background:var(--surf);border:1px solid var(--bdr);border-radius:4px;padding:14px 16px;margin-bottom:10px}
+.sec-title{font-family:'Cinzel',serif;font-size:12px;font-weight:700;color:var(--gold);letter-spacing:3px;text-transform:uppercase;margin-bottom:14px}
+.lbl{color:var(--txtd);font-size:10px;letter-spacing:1px;text-transform:uppercase;display:block;margin-bottom:3px;font-family:'Cinzel',serif}
+.sep{display:flex;align-items:center;gap:10px;margin:14px 0 10px}
+.sep-line{flex:1;height:1px;background:linear-gradient(to right,transparent,var(--goldd))}.sep-line.r{background:linear-gradient(to left,transparent,var(--goldd))}
+.sep-lbl{color:var(--gold);font-size:10px;letter-spacing:2px;text-transform:uppercase;font-family:'Cinzel',serif}
+.grid{display:grid;gap:10px}.g2{grid-template-columns:1fr 1fr}.g4{grid-template-columns:repeat(4,1fr)}.gfill{grid-template-columns:repeat(auto-fill,minmax(125px,1fr))}
+input,select{background:var(--surf2);border:1px solid var(--bdr);border-radius:3px;color:var(--txt);font-family:'Crimson Pro',Georgia,serif;font-size:14px;padding:5px 9px;width:100%;outline:none;transition:border-color .2s}
+input:focus,select:focus{border-color:var(--goldd)}
+input[type=number]{-moz-appearance:textfield}input[type=number]::-webkit-inner-spin-button{opacity:.3}
+.btn{cursor:pointer;border:none;border-radius:3px;font-family:'Cinzel',serif;font-weight:700;letter-spacing:1px;text-transform:uppercase;transition:all .15s;padding:7px 16px;font-size:11px}
+.btn-gold{background:linear-gradient(135deg,var(--goldd),var(--gold));color:#0d0d10}.btn-gold:hover{filter:brightness(1.1)}
+.btn-ghost{background:transparent;color:var(--txtd);border:1px solid var(--bdr)}.btn-ghost:hover{background:var(--surf2);color:var(--txt)}
+.btn-red{background:var(--red);color:var(--txt)}
+.ic-btn{width:26px;height:26px;border:none;border-radius:3px;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;font-weight:bold;color:var(--txt);flex-shrink:0}
+.ic-btn:hover{filter:brightness(1.2)}
+/* Role tags */
+.rtag{display:inline-block;font-size:10px;padding:2px 7px;border-radius:3px;font-weight:700;letter-spacing:.5px;font-family:'Cinzel',serif}
+.rtag-Leader{background:#FAEEDA;color:#633806}.rtag-Battleline{background:#E6F1FB;color:#0C447C}
+.rtag-Artillery{background:#FCEBEB;color:#791F1F}.rtag-Behemoth{background:#EAF3DE;color:#27500A}.rtag-Other{background:#F1EFE8;color:#444441}
+/* Weapon table */
+.w-row{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr 1fr;gap:3px;align-items:center;font-size:11px;padding:3px 0;border-bottom:1px solid var(--bdr)}
+.w-row:last-child{border-bottom:none}
+.w-hdr{color:var(--txtd);font-size:10px;text-transform:uppercase;letter-spacing:.5px;font-family:'Cinzel',serif}
+/* Avg dmg badge */
+.dmg-badge{display:inline-block;background:var(--surf3);border:1px solid var(--goldd);border-radius:3px;padding:2px 8px;font-family:'Cinzel',serif;font-size:12px;font-weight:700;color:var(--gold)}
+.dmg-badge.good{background:rgba(42,107,58,.25);border-color:var(--grn2);color:var(--grn2)}
+.dmg-badge.zero{color:var(--txtf);border-color:var(--bdr);background:transparent}
+/* Unit cards */
+.unit-card{background:var(--surf);border:1px solid var(--bdr);border-radius:4px;margin-bottom:7px;overflow:hidden;transition:border-color .2s}
+.unit-card:hover{border-color:var(--goldd)}
+.unit-hdr{display:flex;align-items:center;justify-content:space-between;padding:9px 13px;cursor:pointer;user-select:none;gap:8px}
+.unit-hdr:hover{background:var(--surf2)}
+.unit-body{padding:6px 13px 12px;border-top:1px solid var(--bdr);animation:fadeIn .2s ease}
+/* Edit mode */
+.edit-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:6px;margin-bottom:8px}
+.edit-row{display:grid;grid-template-columns:2fr repeat(6,1fr);gap:5px;align-items:center;margin-bottom:4px;font-size:12px}
+.edit-row input{padding:3px 5px;font-size:12px}
+/* Points bar */
+.pts-bar-wrap{height:6px;background:var(--surf3);border-radius:4px;overflow:hidden;margin:5px 0}
+.pts-bar{height:100%;border-radius:4px;transition:width .45s}
+/* Modal */
+.modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.8);z-index:200;display:flex;align-items:flex-start;justify-content:center;padding:20px 14px;overflow-y:auto}
+.modal{background:var(--surf);border:1px solid var(--bdr);border-radius:6px;width:100%;max-width:760px;padding:18px;max-height:90vh;display:flex;flex-direction:column}
+.modal-list{overflow-y:auto;flex:1}
+.db-card{background:var(--surf2);border:1px solid var(--bdr);border-radius:4px;padding:9px 12px;margin-bottom:6px;transition:border-color .2s}
+.db-card:hover{border-color:var(--goldd)}
+/* Army picker */
+.army-pick-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:9px;margin-bottom:12px}
+.army-btn{background:var(--surf2);border:1px solid var(--bdr);border-radius:4px;padding:12px 14px;cursor:pointer;text-align:left;transition:all .2s;width:100%}
+.army-btn:hover{border-color:var(--goldd);background:var(--surf3)}.army-btn.selected{border-color:var(--gold);background:var(--surf3)}
+.army-btn-name{font-family:'Cinzel',serif;font-size:12px;font-weight:700;color:var(--txt);margin-bottom:2px}
+.army-btn-count{font-size:11px;color:var(--txtd)}
+/* Big numbers */
+.big-val{font-family:'Cinzel',serif;font-size:34px;font-weight:900;color:var(--gold)}
+.stat-val{font-family:'Cinzel',serif;font-size:20px;font-weight:700}
+/* Toggle */
+.toggle-wrap{display:flex;align-items:center;gap:8px;cursor:pointer}
+.toggle-track{width:34px;height:18px;border-radius:9px;border:1px solid var(--bdr);position:relative;transition:background .2s;cursor:pointer;flex-shrink:0}
+.toggle-thumb{width:12px;height:12px;border-radius:6px;position:absolute;top:2px;transition:left .2s}
+/* Purple for abilities */
+.ab-tag{font-size:10px;color:#b08adf;font-style:italic}
+/* Battle army panel */
+.battle-army-panel{background:var(--surf2);border:1px solid var(--bdr);border-radius:4px;padding:10px 12px;margin-bottom:8px}
+.battle-unit-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid var(--bdr);font-size:13px}
+.battle-unit-row:last-child{border-bottom:none}
+</style>
+</head>
+<body>
+<div class="page" id="app"></div>
+<script>
+const DB=[{"id":"arch-warlock","name":"Arch-Warlock","army":"Skaven","faction":"Skryre","role":"Leader","pts":135,"size":1,"weapons":[{"name":"Warpfire Gauntlet","type":"Ranged","atk":"3","hit":"4+","wnd":"2+","rnd":"-2","dmg":"1","atk_avg":3.0,"hit_prob":0.5,"wnd_prob":0.8333333333333334,"dmg_avg":1.0,"rnd_int":-2,"abilities":"None"},{"name":"Stormcage Halberd","type":"Melee","atk":"3","hit":"3+","wnd":"4+","rnd":"-1","dmg":"2","atk_avg":3.0,"hit_prob":0.6666666666666666,"wnd_prob":0.5,"dmg_avg":2.0,"rnd_int":-1,"abilities":"None"},{"name":"Crushing Piston-claw","type":"Melee","atk":"2","hit":"4+","wnd":"2+","rnd":"-2","dmg":"2","atk_avg":2.0,"hit_prob":0.5,"wnd_prob":0.8333333333333334,"dmg_avg":2.0,"rnd_int":-2,"abilities":"None"}]},{"id":"deathmaster","name":"Deathmaster","army":"Skaven","faction":"Eshin","role":"Leader","pts":120,"size":1,"weapons":[{"name":"Eshin Throwing Stars","type":"Ranged","atk":"5","hit":"3+","wnd":"4+","rnd":"-","dmg":"D3","atk_avg":5.0,"hit_prob":0.6666666666666666,"wnd_prob":0.5,"dmg_avg":2.0,"rnd_int":0,"abilities":"Crit: Auto-wound"},{"name":"Weeping Blade","type":"Melee","atk":"5","hit":"3+","wnd":"4+","rnd":"-1","dmg":"D3","atk_avg":5.0,"hit_prob":0.6666666666666666,"wnd_prob":0.5,"dmg_avg":2.0,"rnd_int":-1,"abilities":"Crit: Mortal"}]},{"id":"grey-seer","name":"Grey Seer","army":"Skaven","faction":"Masterclan","role":"Leader","pts":100,"size":1,"weapons":[{"name":"Warpstone Staff","type":"Melee","atk":"3","hit":"4+","wnd":"4+","rnd":"-1","dmg":"D3","atk_avg":3.0,"hit_prob":0.5,"wnd_prob":0.5,"dmg_avg":2.0,"rnd_int":-1,"abilities":"None"}]},{"id":"krittok-foulblade","name":"Krittok Foulblade","army":"Skaven","faction":"Skryre","role":"Leader","pts":0,"size":1,"weapons":[{"name":"Warplock Pistol","type":"Ranged","atk":"2","hit":"3+","wnd":"3+","rnd":"-2","dmg":"D3","atk_avg":2.0,"hit_prob":0.6666666666666666,"wnd_prob":0.6666666666666666,"dmg_avg":2.0,"rnd_int":-2,"abilities":"Crit: Auto-wound"},{"name":"Doomfang","type":"Melee","atk":"5","hit":"3+","wnd":"3+","rnd":"-2","dmg":"2","atk_avg":5.0,"hit_prob":0.6666666666666666,"wnd_prob":0.6666666666666666,"dmg_avg":2.0,"rnd_int":-2,"abilities":"Crit: Mortal"}]},{"id":"master-moulder","name":"Master Moulder","army":"Skaven","faction":"Moulder","role":"Leader","pts":80,"size":1,"weapons":[{"name":"Warpsyringe Pistol","type":"Ranged","atk":"D6","hit":"4+","wnd":"2+","rnd":"-2","dmg":"1","atk_avg":3.5,"hit_prob":0.5,"wnd_prob":0.8333333333333334,"dmg_avg":1.0,"rnd_int":-2,"abilities":"None"},{"name":"Arsenal of Mutation","type":"Melee","atk":"4","hit":"3+","wnd":"4+","rnd":"-1","dmg":"1","atk_avg":4.0,"hit_prob":0.6666666666666666,"wnd_prob":0.5,"dmg_avg":1.0,"rnd_int":-1,"abilities":"Crit: 2 Hits"}]},{"id":"warlock-bombardier","name":"Warlock Bombardier","army":"Skaven","faction":"Skryre","role":"Leader","pts":0,"size":1,"weapons":[{"name":"Doomrocket","type":"Ranged","atk":"2","hit":"4+","wnd":"3+","rnd":"-1","dmg":"D6","atk_avg":2.0,"hit_prob":0.5,"wnd_prob":0.6666666666666666,"dmg_avg":3.5,"rnd_int":-1,"abilities":"None"},{"name":"Firing Pole","type":"Melee","atk":"3","hit":"4+","wnd":"4+","rnd":"-","dmg":"1","atk_avg":3.0,"hit_prob":0.5,"wnd_prob":0.5,"dmg_avg":1.0,"rnd_int":0,"abilities":"None"}]},{"id":"warlock-engineer","name":"Warlock Engineer","army":"Skaven","faction":"Skryre","role":"Leader","pts":90,"size":1,"weapons":[{"name":"Warplock Musket","type":"Ranged","atk":"2","hit":"3+","wnd":"3+","rnd":"-2","dmg":"D3","atk_avg":2.0,"hit_prob":0.6666666666666666,"wnd_prob":0.6666666666666666,"dmg_avg":2.0,"rnd_int":-2,"abilities":"Crit: Auto-wound"},{"name":"Warpforged Dagger","type":"Melee","atk":"3","hit":"4+","wnd":"4+","rnd":"-","dmg":"2","atk_avg":3.0,"hit_prob":0.5,"wnd_prob":0.5,"dmg_avg":2.0,"rnd_int":0,"abilities":"None"}]},{"id":"warlock-galvaneer","name":"Warlock Galvaneer","army":"Skaven","faction":"Skryre","role":"Leader","pts":0,"size":1,"weapons":[{"name":"Warplock Musket","type":"Ranged","atk":"2","hit":"3+","wnd":"3+","rnd":"-2","dmg":"D3","atk_avg":2.0,"hit_prob":0.6666666666666666,"wnd_prob":0.6666666666666666,"dmg_avg":2.0,"rnd_int":-2,"abilities":"Crit: Auto-wound"},{"name":"Warpforged Dagger","type":"Melee","atk":"3","hit":"4+","wnd":"4+","rnd":"-","dmg":"2","atk_avg":3.0,"hit_prob":0.5,"wnd_prob":0.5,"dmg_avg":2.0,"rnd_int":0,"abilities":"None"}]},{"id":"lord-skreech-verminking","name":"Lord Skreech Verminking","army":"Skaven","faction":"Masterclan","role":"Behemoth","pts":0,"size":1,"weapons":[{"name":"Glaive of the Rat King","type":"Melee","atk":"7","hit":"3+","wnd":"2+","rnd":"-2","dmg":"3","atk_avg":7.0,"hit_prob":0.6666666666666666,"wnd_prob":0.8333333333333334,"dmg_avg":3.0,"rnd_int":-2,"abilities":"Crit: 2 Hits"}]},{"id":"verminlord-corruptor","name":"Verminlord Corruptor","army":"Skaven","faction":"Pestilens","role":"Behemoth","pts":300,"size":1,"weapons":[{"name":"Plaguereapers","type":"Melee","atk":"8","hit":"3+","wnd":"2+","rnd":"-2","dmg":"2","atk_avg":8.0,"hit_prob":0.6666666666666666,"wnd_prob":0.8333333333333334,"dmg_avg":2.0,"rnd_int":-2,"abilities":"Crit: Auto-wound"}]},{"id":"verminlord-deceiver","name":"Verminlord Deceiver","army":"Skaven","faction":"Eshin","role":"Behemoth","pts":0,"size":1,"weapons":[{"name":"Doomstar","type":"Ranged","atk":"6","hit":"3+","wnd":"3+","rnd":"-1","dmg":"2","atk_avg":6.0,"hit_prob":0.6666666666666666,"wnd_prob":0.6666666666666666,"dmg_avg":2.0,"rnd_int":-1,"abilities":"Crit: Auto-wound"},{"name":"Warpstiletto","type":"Melee","atk":"8","hit":"3+","wnd":"2+","rnd":"-3","dmg":"2","atk_avg":8.0,"hit_prob":0.6666666666666666,"wnd_prob":0.8333333333333334,"dmg_avg":2.0,"rnd_int":-3,"abilities":"Crit: Mortal"}]},{"id":"verminlord-warpseer","name":"Verminlord Warpseer","army":"Skaven","faction":"Masterclan","role":"Behemoth","pts":310,"size":1,"weapons":[{"name":"Doom Glaive","type":"Melee","atk":"6","hit":"4+","wnd":"2+","rnd":"-2","dmg":"3","atk_avg":6.0,"hit_prob":0.5,"wnd_prob":0.8333333333333334,"dmg_avg":3.0,"rnd_int":-2,"abilities":"None"}]},{"id":"vizzik-skour-prophet-of-the-horned-rat","name":"Vizzik Skour, Prophet of the Horned Rat","army":"Skaven","faction":"Masterclan","role":"Leader","pts":0,"size":1,"weapons":[{"name":"Doom Glaive","type":"Melee","atk":"6","hit":"4+","wnd":"2+","rnd":"-2","dmg":"3","atk_avg":6.0,"hit_prob":0.5,"wnd_prob":0.8333333333333334,"dmg_avg":3.0,"rnd_int":-2,"abilities":"None"}]},{"id":"plague-priest-on-plague-furnace","name":"Plague Priest on Plague Furnace","army":"Skaven","faction":"Pestilens","role":"Leader","pts":340,"size":1,"weapons":[{"name":"Great Plague Censer","type":"Melee","atk":"4","hit":"4+","wnd":"2+","rnd":"-1","dmg":"3","atk_avg":4.0,"hit_prob":0.5,"wnd_prob":0.8333333333333334,"dmg_avg":3.0,"rnd_int":-1,"abilities":"Crit: Auto-wound"},{"name":"Warpstone-tipped Staff","type":"Melee","atk":"3","hit":"4+","wnd":"4+","rnd":"-1","dmg":"D3","atk_avg":3.0,"hit_prob":0.5,"wnd_prob":0.5,"dmg_avg":2.0,"rnd_int":-1,"abilities":"Crit: Auto-wound"},{"name":"Foetid Blades","type":"Melee","atk":"6","hit":"4+","wnd":"5+","rnd":"-","dmg":"1","atk_avg":6.0,"hit_prob":0.5,"wnd_prob":0.3333333333333333,"dmg_avg":1.0,"rnd_int":0,"abilities":"Crit: Auto-wound"},{"name":"Crushing Bulk","type":"Melee","atk":"6","hit":"4+","wnd":"2+","rnd":"-1","dmg":"2","atk_avg":6.0,"hit_prob":0.5,"wnd_prob":0.8333333333333334,"dmg_avg":2.0,"rnd_int":-1,"abilities":"None"}]},{"id":"scourge-of-ghyran-grey-seer-on-screaming-bell","name":"Scourge of Ghyran Grey Seer on Screaming Bell","army":"Skaven","faction":"Pestilens","role":"Behemoth","pts":0,"size":1,"weapons":[{"name":"Great Plague Censer","type":"Melee","atk":"4","hit":"4+","wnd":"2+","rnd":"-1","dmg":"3","atk_avg":4.0,"hit_prob":0.5,"wnd_prob":0.8333333333333334,"dmg_avg":3.0,"rnd_int":-1,"abilities":"Crit: Auto-wound"},{"name":"Warpstone-tipped Staff","type":"Melee","atk":"3","hit":"4+","wnd":"4+","rnd":"-1","dmg":"D3","atk_avg":3.0,"hit_prob":0.5,"wnd_prob":0.5,"dmg_avg":2.0,"rnd_int":-1,"abilities":"Crit: Auto-wound"},{"name":"Foetid Blades","type":"Melee","atk":"6","hit":"4+","wnd":"5+","rnd":"-","dmg":"1","atk_avg":6.0,"hit_prob":0.5,"wnd_prob":0.3333333333333333,"dmg_avg":1.0,"rnd_int":0,"abilities":"Crit: Auto-wound"},{"name":"Crushing Bulk","type":"Melee","atk":"6","hit":"4+","wnd":"2+","rnd":"-1","dmg":"2","atk_avg":6.0,"hit_prob":0.5,"wnd_prob":0.8333333333333334,"dmg_avg":2.0,"rnd_int":-1,"abilities":"None"}]},{"id":"clanrats","name":"Clanrats","army":"Skaven","faction":"Verminus","role":"Battleline","pts":150,"size":20,"weapons":[{"name":"Rusty Weapon","type":"Melee","atk":"2","hit":"4+","wnd":"5+","rnd":"-","dmg":"1","atk_avg":2.0,"hit_prob":0.5,"wnd_prob":0.3333333333333333,"dmg_avg":1.0,"rnd_int":0,"abilities":"Crit: Auto-wound"}]},{"id":"plague-monks","name":"Plague Monks","army":"Skaven","faction":"Pestilens","role":"Battleline","pts":95,"size":10,"weapons":[{"name":"Foetid Weapons","type":"Melee","atk":"2","hit":"4+","wnd":"5+","rnd":"-","dmg":"1","atk_avg":2.0,"hit_prob":0.5,"wnd_prob":0.3333333333333333,"dmg_avg":1.0,"rnd_int":0,"abilities":"Crit: Auto-wound"}]},{"id":"plaguepack","name":"Plaguepack","army":"Skaven","faction":"Pestilens","role":"Other","pts":0,"size":10,"weapons":[{"name":"Weapons of Corruption","type":"Melee","atk":"2","hit":"4+","wnd":"5+","rnd":"-","dmg":"1","atk_avg":2.0,"hit_prob":0.5,"wnd_prob":0.3333333333333333,"dmg_avg":1.0,"rnd_int":0,"abilities":"Crit: Auto-wound"},{"name":"Plague Censer","type":"Melee","atk":"4","hit":"4+","wnd":"3+","rnd":"-1","dmg":"2","atk_avg":4.0,"hit_prob":0.5,"wnd_prob":0.6666666666666666,"dmg_avg":2.0,"rnd_int":-1,"abilities":"Crit: Auto-wound"}]},{"id":"ratling-gun","name":"Ratling Gun","army":"Skaven","faction":"Skryre","role":"Other","pts":170,"size":1,"weapons":[{"name":"Ratling Gun","type":"Ranged","atk":"3D6","hit":"4+","wnd":"4+","rnd":"-1","dmg":"1","atk_avg":10.5,"hit_prob":0.5,"wnd_prob":0.5,"dmg_avg":1.0,"rnd_int":-1,"abilities":"Crit: 2 Hits"},{"name":"Rusty Knives","type":"Melee","atk":"2","hit":"4+","wnd":"5+","rnd":"-","dmg":"1","atk_avg":2.0,"hit_prob":0.5,"wnd_prob":0.3333333333333333,"dmg_avg":1.0,"rnd_int":0,"abilities":"None"}]},{"id":"acolyte-globadiers","name":"Acolyte Globadiers","army":"Skaven","faction":"Skryre","role":"Other","pts":0,"size":5,"weapons":[{"name":"Poisoned Wind Globes","type":"Ranged","atk":"1","hit":"3+","wnd":"3+","rnd":"-1","dmg":"D3","atk_avg":1.0,"hit_prob":0.6666666666666666,"wnd_prob":0.6666666666666666,"dmg_avg":2.0,"rnd_int":-1,"abilities":"None"},{"name":"Rusty Knife","type":"Melee","atk":"1","hit":"4+","wnd":"5+","rnd":"-","dmg":"1","atk_avg":1.0,"hit_prob":0.5,"wnd_prob":0.3333333333333333,"dmg_avg":1.0,"rnd_int":0,"abilities":"None"}]},{"id":"night-runners","name":"Night Runners","army":"Skaven","faction":"Eshin","role":"Battleline","pts":110,"size":10,"weapons":[{"name":"Slings and Poisoned Stars","type":"Ranged","atk":"2","hit":"4+","wnd":"4+","rnd":"-","dmg":"1","atk_avg":2.0,"hit_prob":0.5,"wnd_prob":0.5,"dmg_avg":1.0,"rnd_int":0,"abilities":"Crit: Auto-wound"},{"name":"Poisoned Blades","type":"Melee","atk":"2","hit":"4+","wnd":"5+","rnd":"-","dmg":"1","atk_avg":2.0,"hit_prob":0.5,"wnd_prob":0.3333333333333333,"dmg_avg":1.0,"rnd_int":0,"abilities":"Crit: Mortal"}]},{"id":"rat-ogors","name":"Rat Ogors","army":"Skaven","faction":"Moulder","role":"Other","pts":140,"size":2,"weapons":[{"name":"Warpfire Gun","type":"Ranged","atk":"2D6","hit":"2+","wnd":"4+","rnd":"-2","dmg":"1","atk_avg":7.0,"hit_prob":0.8333333333333334,"wnd_prob":0.5,"dmg_avg":1.0,"rnd_int":-2,"abilities":"None"},{"name":"Claws, Blades and Fangs","type":"Melee","atk":"5","hit":"4+","wnd":"3+","rnd":"-1","dmg":"2","atk_avg":5.0,"hit_prob":0.5,"wnd_prob":0.6666666666666666,"dmg_avg":2.0,"rnd_int":-1,"abilities":"None"}]},{"id":"stormfiends","name":"Stormfiends","army":"Skaven","faction":"Skryre","role":"Other","pts":0,"size":3,"weapons":[{"name":"Ratling Cannons","type":"Ranged","atk":"3D6","hit":"4+","wnd":"3+","rnd":"-1","dmg":"1","atk_avg":10.5,"hit_prob":0.5,"wnd_prob":0.6666666666666666,"dmg_avg":1.0,"rnd_int":-1,"abilities":"None"},{"name":"Windlaunchers","type":"Ranged","atk":"3","hit":"4+","wnd":"3+","rnd":"-2","dmg":"D3","atk_avg":3.0,"hit_prob":0.5,"wnd_prob":0.6666666666666666,"dmg_avg":2.0,"rnd_int":-2,"abilities":"None"},{"name":"Warpfire Projectors","type":"Ranged","atk":"2D6","hit":"2+","wnd":"4+","rnd":"-2","dmg":"1","atk_avg":7.0,"hit_prob":0.8333333333333334,"wnd_prob":0.5,"dmg_avg":1.0,"rnd_int":-2,"abilities":"None"},{"name":"Doomflayer Gauntlets","type":"Melee","atk":"5","hit":"4+","wnd":"2+","rnd":"-2","dmg":"D3","atk_avg":5.0,"hit_prob":0.5,"wnd_prob":0.8333333333333334,"dmg_avg":2.0,"rnd_int":-2,"abilities":"None"},{"name":"Grinderfists","type":"Melee","atk":"4","hit":"4+","wnd":"2+","rnd":"-2","dmg":"2","atk_avg":4.0,"hit_prob":0.5,"wnd_prob":0.8333333333333334,"dmg_avg":2.0,"rnd_int":-2,"abilities":"None"},{"name":"Shock Gauntlets","type":"Melee","atk":"4","hit":"4+","wnd":"2+","rnd":"-1","dmg":"2","atk_avg":4.0,"hit_prob":0.5,"wnd_prob":0.8333333333333334,"dmg_avg":2.0,"rnd_int":-1,"abilities":"None"}]},{"id":"stormvermin","name":"Stormvermin","army":"Skaven","faction":"Verminus","role":"Battleline","pts":110,"size":10,"weapons":[{"name":"Stormvermin Weapons","type":"Melee","atk":"3","hit":"3+","wnd":"4+","rnd":"-1","dmg":"1","atk_avg":3.0,"hit_prob":0.6666666666666666,"wnd_prob":0.5,"dmg_avg":1.0,"rnd_int":-1,"abilities":"None"}]},{"id":"warpfire-throwers","name":"Warpfire Throwers","army":"Skaven","faction":"Skryre","role":"Other","pts":0,"size":1,"weapons":[{"name":"Warpfire Thrower","type":"Ranged","atk":"2D6","hit":"2+","wnd":"4+","rnd":"-2","dmg":"1","atk_avg":7.0,"hit_prob":0.8333333333333334,"wnd_prob":0.5,"dmg_avg":1.0,"rnd_int":-2,"abilities":"None"},{"name":"Rusty Knives","type":"Melee","atk":"2","hit":"4+","wnd":"5+","rnd":"-","dmg":"1","atk_avg":2.0,"hit_prob":0.5,"wnd_prob":0.3333333333333333,"dmg_avg":1.0,"rnd_int":0,"abilities":"None"}]},{"id":"warplock-jezzails","name":"Warplock Jezzails","army":"Skaven","faction":"Skryre","role":"Other","pts":150,"size":3,"weapons":[{"name":"Warplock Jezzail","type":"Ranged","atk":"2","hit":"4+","wnd":"3+","rnd":"-2","dmg":"2","atk_avg":2.0,"hit_prob":0.5,"wnd_prob":0.6666666666666666,"dmg_avg":2.0,"rnd_int":-2,"abilities":"Crit: Auto-wound"},{"name":"Rusty Knives","type":"Melee","atk":"2","hit":"4+","wnd":"5+","rnd":"-","dmg":"1","atk_avg":2.0,"hit_prob":0.5,"wnd_prob":0.3333333333333333,"dmg_avg":1.0,"rnd_int":0,"abilities":"None"}]},{"id":"warpvolt-scourgers","name":"Warpvolt Scourgers","army":"Skaven","faction":"Skryre","role":"Other","pts":0,"size":3,"weapons":[{"name":"Warpvolt Scourger","type":"Ranged","atk":"2D6","hit":"2+","wnd":"4+","rnd":"-1","dmg":"1","atk_avg":7.0,"hit_prob":0.8333333333333334,"wnd_prob":0.5,"dmg_avg":1.0,"rnd_int":-1,"abilities":"Crit: 2 Hits"},{"name":"Rusty Knives","type":"Melee","atk":"2","hit":"4+","wnd":"5+","rnd":"-","dmg":"1","atk_avg":2.0,"hit_prob":0.5,"wnd_prob":0.3333333333333333,"dmg_avg":1.0,"rnd_int":0,"abilities":"None"}]},{"id":"brood-terror","name":"Brood Terror","army":"Skaven","faction":"Moulder","role":"Behemoth","pts":0,"size":1,"weapons":[{"name":"Warpflame Scourger","type":"Ranged","atk":"2D6","hit":"4+","wnd":"2+","rnd":"-1","dmg":"D3","atk_avg":7.0,"hit_prob":0.5,"wnd_prob":0.8333333333333334,"dmg_avg":2.0,"rnd_int":-1,"abilities":"Crit: Auto-wound"},{"name":"Chain-flail","type":"Melee","atk":"5","hit":"4+","wnd":"2+","rnd":"-2","dmg":"3","atk_avg":5.0,"hit_prob":0.5,"wnd_prob":0.8333333333333334,"dmg_avg":3.0,"rnd_int":-2,"abilities":"Crit: Mortal"},{"name":"Bladed Limbs","type":"Melee","atk":"3","hit":"4+","wnd":"4+","rnd":"-1","dmg":"2","atk_avg":3.0,"hit_prob":0.5,"wnd_prob":0.5,"dmg_avg":2.0,"rnd_int":-1,"abilities":"None"}]},{"id":"hell-pit-abomination","name":"Hell Pit Abomination","army":"Skaven","faction":"Moulder","role":"Behemoth","pts":200,"size":1,"weapons":[{"name":"Gnashing Teeth and Flailing Fists","type":"Melee","atk":"13","hit":"4+","wnd":"2+","rnd":"-2","dmg":"2","atk_avg":13.0,"hit_prob":0.5,"wnd_prob":0.8333333333333334,"dmg_avg":2.0,"rnd_int":-2,"abilities":"None"}]},{"id":"scourge-of-ghyran-brood-terror","name":"Scourge of Ghyran Brood Terror","army":"Skaven","faction":"Moulder","role":"Behemoth","pts":0,"size":1,"weapons":[{"name":"Warpflame Scourger","type":"Ranged","atk":"2D6","hit":"4+","wnd":"2+","rnd":"-1","dmg":"D3","atk_avg":7.0,"hit_prob":0.5,"wnd_prob":0.8333333333333334,"dmg_avg":2.0,"rnd_int":-1,"abilities":"Crit: Auto-wound"},{"name":"Chain-flail","type":"Melee","atk":"5","hit":"4+","wnd":"2+","rnd":"-2","dmg":"3","atk_avg":5.0,"hit_prob":0.5,"wnd_prob":0.8333333333333334,"dmg_avg":3.0,"rnd_int":-2,"abilities":"Crit: Mortal"},{"name":"Loosely Attached Bladed Limbs","type":"Melee","atk":"5","hit":"4+","wnd":"4+","rnd":"-1","dmg":"2","atk_avg":5.0,"hit_prob":0.5,"wnd_prob":0.5,"dmg_avg":2.0,"rnd_int":-1,"abilities":"None"}]},{"id":"doom-flayers","name":"Doom-Flayers","army":"Skaven","faction":"Skryre","role":"Other","pts":0,"size":1,"weapons":[{"name":"Whirling Blades","type":"Melee","atk":"2D6","hit":"3+","wnd":"3+","rnd":"-1","dmg":"1","atk_avg":7.0,"hit_prob":0.6666666666666666,"wnd_prob":0.6666666666666666,"dmg_avg":1.0,"rnd_int":-1,"abilities":"None"}]},{"id":"doomwheel","name":"Doomwheel","army":"Skaven","faction":"Skryre","role":"Behemoth","pts":110,"size":1,"weapons":[{"name":"Warp Bolts","type":"Ranged","atk":"D6","hit":"3+","wnd":"3+","rnd":"-1","dmg":"D3","atk_avg":3.5,"hit_prob":0.6666666666666666,"wnd_prob":0.6666666666666666,"dmg_avg":2.0,"rnd_int":-1,"abilities":"None"},{"name":"Grinding Wheels","type":"Melee","atk":"6","hit":"4+","wnd":"3+","rnd":"-","dmg":"1","atk_avg":6.0,"hit_prob":0.5,"wnd_prob":0.6666666666666666,"dmg_avg":1.0,"rnd_int":0,"abilities":"None"}]},{"id":"plagueclaw","name":"Plagueclaw","army":"Skaven","faction":"Verminus","role":"Artillery","pts":145,"size":1,"weapons":[{"name":"Plagueclaw Catapult","type":"Ranged","atk":"2","hit":"3+","wnd":"2+","rnd":"-1","dmg":"D6","atk_avg":2.0,"hit_prob":0.6666666666666666,"wnd_prob":0.8333333333333334,"dmg_avg":3.5,"rnd_int":-1,"abilities":"None"},{"name":"Crew\u2019s Teeth and Knives","type":"Melee","atk":"D6","hit":"4+","wnd":"5+","rnd":"-","dmg":"1","atk_avg":3.5,"hit_prob":0.5,"wnd_prob":0.3333333333333333,"dmg_avg":1.0,"rnd_int":0,"abilities":"None"}]},{"id":"ratling-warpblaster","name":"Ratling Warpblaster","army":"Skaven","faction":"Skryre","role":"Artillery","pts":0,"size":1,"weapons":[{"name":"Hail of Warpstone Bullets","type":"Ranged","atk":"3D6+3","hit":"4+","wnd":"3+","rnd":"-1","dmg":"1","atk_avg":13.5,"hit_prob":0.5,"wnd_prob":0.6666666666666666,"dmg_avg":1.0,"rnd_int":-1,"abilities":"Crit: Auto-wound"},{"name":"Thrall-rats\u2019 Claws","type":"Melee","atk":"4","hit":"4+","wnd":"5+","rnd":"-","dmg":"1","atk_avg":4.0,"hit_prob":0.5,"wnd_prob":0.3333333333333333,"dmg_avg":1.0,"rnd_int":0,"abilities":"None"}]},{"id":"warp-lightning-cannon","name":"Warp Lightning Cannon","army":"Skaven","faction":"Skryre","role":"Artillery","pts":120,"size":1,"weapons":[{"name":"Warp Lightning Blast","type":"Ranged","atk":"2D6","hit":"4+","wnd":"[TABLE]","rnd":"-","dmg":"-","atk_avg":7.0,"hit_prob":0.5,"wnd_prob":null,"dmg_avg":null,"rnd_int":0,"abilities":"None"},{"name":"Crew\u2019s Teeth and Knives","type":"Melee","atk":"D6","hit":"4+","wnd":"5+","rnd":"-","dmg":"1","atk_avg":3.5,"hit_prob":0.5,"wnd_prob":0.3333333333333333,"dmg_avg":1.0,"rnd_int":0,"abilities":"None"}]},{"id":"warp-grinder","name":"Warp-Grinder","army":"Skaven","faction":"Skryre","role":"Other","pts":0,"size":1,"weapons":[{"name":"Warpstone Drill-fang","type":"Melee","atk":"D3","hit":"4+","wnd":"2+","rnd":"-3","dmg":"5","atk_avg":2.0,"hit_prob":0.5,"wnd_prob":0.8333333333333334,"dmg_avg":5.0,"rnd_int":-3,"abilities":"None"},{"name":"Crew\u2019s Teeth and Knives","type":"Melee","atk":"D6","hit":"4+","wnd":"5+","rnd":"-","dmg":"1","atk_avg":3.5,"hit_prob":0.5,"wnd_prob":0.3333333333333333,"dmg_avg":1.0,"rnd_int":0,"abilities":"None"}]},{"id":"teclis","name":"Teclis","army":"Lumineth Realm-lords","faction":"Scinari","role":"Leader","pts":720,"size":1,"weapons":[{"name":"Storm of Searing White Light","type":"Ranged","atk":"3","hit":"2+","wnd":"2+","rnd":"-3","dmg":"D6","atk_avg":3.0,"hit_prob":0.8333333333333334,"wnd_prob":0.8333333333333334,"dmg_avg":3.5,"rnd_int":-3,"abilities":"None"},{"name":"Lunar Staff","type":"Melee","atk":"4","hit":"2+","wnd":"2+","rnd":"-3","dmg":"3","atk_avg":4.0,"hit_prob":0.8333333333333334,"wnd_prob":0.8333333333333334,"dmg_avg":3.0,"rnd_int":-3,"abilities":"None"}]},{"id":"avalenor-the-stoneheart-king","name":"Avalenor the Stoneheart King","army":"Lumineth Realm-lords","faction":"Alarith","role":"Behemoth","pts":460,"size":1,"weapons":[{"name":"Firestealer Hammers","type":"Melee","atk":"3","hit":"3+","wnd":"2+","rnd":"-2","dmg":"D6+3","atk_avg":3.0,"hit_prob":0.6666666666666666,"wnd_prob":0.8333333333333334,"dmg_avg":6.5,"rnd_int":-2,"abilities":"None"},{"name":"Geomantic Shockwave","type":"Melee","atk":"D6","hit":"3+","wnd":"3+","rnd":"-1","dmg":"2","atk_avg":3.5,"hit_prob":0.6666666666666666,"wnd_prob":0.6666666666666666,"dmg_avg":2.0,"rnd_int":-1,"abilities":"None"}]},{"id":"sevireth-lord-of-the-seventh-wind","name":"Sevireth, Lord of the Seventh Wind","army":"Lumineth Realm-lords","faction":"Hurakan","role":"Behemoth","pts":340,"size":1,"weapons":[{"name":"Enathrai, the Howling Death","type":"Melee","atk":"5","hit":"3+","wnd":"2+","rnd":"-2","dmg":"D3+3","atk_avg":5.0,"hit_prob":0.6666666666666666,"wnd_prob":0.8333333333333334,"dmg_avg":5.0,"rnd_int":-2,"abilities":"None"},{"name":"Scouring Blast","type":"Ranged","atk":"D6","hit":"3+","wnd":"3+","rnd":"-1","dmg":"1","atk_avg":3.5,"hit_prob":0.6666666666666666,"wnd_prob":0.6666666666666666,"dmg_avg":1.0,"rnd_int":-1,"abilities":"None"}]},{"id":"scinari-cathallar","name":"Scinari Cathallar","army":"Lumineth Realm-lords","faction":"Scinari","role":"Leader","pts":145,"size":1,"weapons":[{"name":"Eclipsian Mage Staff","type":"Melee","atk":"3","hit":"3+","wnd":"3+","rnd":"-1","dmg":"D3","atk_avg":3.0,"hit_prob":0.6666666666666666,"wnd_prob":0.6666666666666666,"dmg_avg":2.0,"rnd_int":-1,"abilities":"None"}]},{"id":"alarith-stonemage","name":"Alarith Stonemage","army":"Lumineth Realm-lords","faction":"Alarith","role":"Leader","pts":135,"size":1,"weapons":[{"name":"Staff of the High Peaks","type":"Melee","atk":"3","hit":"3+","wnd":"3+","rnd":"-2","dmg":"D3","atk_avg":3.0,"hit_prob":0.6666666666666666,"wnd_prob":0.6666666666666666,"dmg_avg":2.0,"rnd_int":-2,"abilities":"None"}]},{"id":"vanari-lord-regent","name":"Vanari Lord Regent","army":"Lumineth Realm-lords","faction":"Vanari","role":"Leader","pts":155,"size":1,"weapons":[{"name":"Sunmetal Sword","type":"Melee","atk":"4","hit":"3+","wnd":"3+","rnd":"-1","dmg":"2","atk_avg":4.0,"hit_prob":0.6666666666666666,"wnd_prob":0.6666666666666666,"dmg_avg":2.0,"rnd_int":-1,"abilities":"None"},{"name":"Regent's Decree","type":"Melee","atk":"1","hit":"2+","wnd":"2+","rnd":"-3","dmg":"D6","atk_avg":1.0,"hit_prob":0.8333333333333334,"wnd_prob":0.8333333333333334,"dmg_avg":3.5,"rnd_int":-3,"abilities":"None"}]},{"id":"hurakan-windmage","name":"Hurakan Windmage","army":"Lumineth Realm-lords","faction":"Hurakan","role":"Leader","pts":130,"size":1,"weapons":[{"name":"Windstaff","type":"Melee","atk":"3","hit":"3+","wnd":"3+","rnd":"-1","dmg":"D3","atk_avg":3.0,"hit_prob":0.6666666666666666,"wnd_prob":0.6666666666666666,"dmg_avg":2.0,"rnd_int":-1,"abilities":"None"}]},{"id":"vanari-auralan-wardens","name":"Vanari Auralan Wardens","army":"Lumineth Realm-lords","faction":"Vanari","role":"Battleline","pts":145,"size":10,"weapons":[{"name":"Warden's Pike","type":"Melee","atk":"2","hit":"3+","wnd":"3+","rnd":"-1","dmg":"1","atk_avg":2.0,"hit_prob":0.6666666666666666,"wnd_prob":0.6666666666666666,"dmg_avg":1.0,"rnd_int":-1,"abilities":"None"},{"name":"Sunmetal Weapons","type":"Melee","atk":"1","hit":"3+","wnd":"4+","rnd":"-","dmg":"1","atk_avg":1.0,"hit_prob":0.6666666666666666,"wnd_prob":0.5,"dmg_avg":1.0,"rnd_int":0,"abilities":"None"}]},{"id":"vanari-auralan-sentinels","name":"Vanari Auralan Sentinels","army":"Lumineth Realm-lords","faction":"Vanari","role":"Battleline","pts":160,"size":10,"weapons":[{"name":"Auralan Bow","type":"Ranged","atk":"2","hit":"3+","wnd":"3+","rnd":"-1","dmg":"1","atk_avg":2.0,"hit_prob":0.6666666666666666,"wnd_prob":0.6666666666666666,"dmg_avg":1.0,"rnd_int":-1,"abilities":"None"},{"name":"Sunmetal Weapons","type":"Melee","atk":"1","hit":"3+","wnd":"4+","rnd":"-","dmg":"1","atk_avg":1.0,"hit_prob":0.6666666666666666,"wnd_prob":0.5,"dmg_avg":1.0,"rnd_int":0,"abilities":"None"}]},{"id":"vanari-bladelords","name":"Vanari Bladelords","army":"Lumineth Realm-lords","faction":"Vanari","role":"Battleline","pts":185,"size":5,"weapons":[{"name":"Senlui Aetherquartz Sword","type":"Melee","atk":"4","hit":"3+","wnd":"3+","rnd":"-2","dmg":"2","atk_avg":4.0,"hit_prob":0.6666666666666666,"wnd_prob":0.6666666666666666,"dmg_avg":2.0,"rnd_int":-2,"abilities":"None"},{"name":"Sunmetal Weapons","type":"Melee","atk":"1","hit":"3+","wnd":"4+","rnd":"-","dmg":"1","atk_avg":1.0,"hit_prob":0.6666666666666666,"wnd_prob":0.5,"dmg_avg":1.0,"rnd_int":0,"abilities":"None"}]},{"id":"alarith-stoneguard","name":"Alarith Stoneguard","army":"Lumineth Realm-lords","faction":"Alarith","role":"Battleline","pts":155,"size":5,"weapons":[{"name":"Stone Mallet","type":"Melee","atk":"2","hit":"3+","wnd":"3+","rnd":"-1","dmg":"2","atk_avg":2.0,"hit_prob":0.6666666666666666,"wnd_prob":0.6666666666666666,"dmg_avg":2.0,"rnd_int":-1,"abilities":"None"},{"name":"Diamondpick Hammer","type":"Melee","atk":"2","hit":"3+","wnd":"3+","rnd":"-2","dmg":"1","atk_avg":2.0,"hit_prob":0.6666666666666666,"wnd_prob":0.6666666666666666,"dmg_avg":1.0,"rnd_int":-2,"abilities":"None"}]},{"id":"hurakan-windchargers","name":"Hurakan Windchargers","army":"Lumineth Realm-lords","faction":"Hurakan","role":"Battleline","pts":170,"size":5,"weapons":[{"name":"Windcharger Bow","type":"Ranged","atk":"2","hit":"3+","wnd":"3+","rnd":"-1","dmg":"1","atk_avg":2.0,"hit_prob":0.6666666666666666,"wnd_prob":0.6666666666666666,"dmg_avg":1.0,"rnd_int":-1,"abilities":"None"},{"name":"Vanari Sword","type":"Melee","atk":"2","hit":"4+","wnd":"4+","rnd":"-","dmg":"1","atk_avg":2.0,"hit_prob":0.5,"wnd_prob":0.5,"dmg_avg":1.0,"rnd_int":0,"abilities":"None"}]},{"id":"vanari-dawnriders","name":"Vanari Dawnriders","army":"Lumineth Realm-lords","faction":"Vanari","role":"Other","pts":195,"size":5,"weapons":[{"name":"Sunmetal Lance","type":"Melee","atk":"2","hit":"3+","wnd":"3+","rnd":"-1","dmg":"1","atk_avg":2.0,"hit_prob":0.6666666666666666,"wnd_prob":0.6666666666666666,"dmg_avg":1.0,"rnd_int":-1,"abilities":"None"},{"name":"Steedmaster's Blade","type":"Melee","atk":"4","hit":"3+","wnd":"3+","rnd":"-1","dmg":"1","atk_avg":4.0,"hit_prob":0.6666666666666666,"wnd_prob":0.6666666666666666,"dmg_avg":1.0,"rnd_int":-1,"abilities":"None"}]},{"id":"alarith-spirit-of-the-mountain","name":"Alarith Spirit of the Mountain","army":"Lumineth Realm-lords","faction":"Alarith","role":"Behemoth","pts":340,"size":1,"weapons":[{"name":"Stonehammer","type":"Melee","atk":"4","hit":"3+","wnd":"2+","rnd":"-2","dmg":"D6+3","atk_avg":4.0,"hit_prob":0.6666666666666666,"wnd_prob":0.8333333333333334,"dmg_avg":6.5,"rnd_int":-2,"abilities":"None"},{"name":"Geomantic Shockwave","type":"Melee","atk":"D6","hit":"3+","wnd":"3+","rnd":"-1","dmg":"2","atk_avg":3.5,"hit_prob":0.6666666666666666,"wnd_prob":0.6666666666666666,"dmg_avg":2.0,"rnd_int":-1,"abilities":"None"}]},{"id":"scinari-loreseeker","name":"Scinari Loreseeker","army":"Lumineth Realm-lords","faction":"Scinari","role":"Leader","pts":155,"size":1,"weapons":[{"name":"Eclipsian Mage Staff","type":"Melee","atk":"3","hit":"3+","wnd":"3+","rnd":"-1","dmg":"D3","atk_avg":3.0,"hit_prob":0.6666666666666666,"wnd_prob":0.6666666666666666,"dmg_avg":2.0,"rnd_int":-1,"abilities":"None"},{"name":"Sunmetal Weapon","type":"Melee","atk":"1","hit":"3+","wnd":"4+","rnd":"-","dmg":"1","atk_avg":1.0,"hit_prob":0.6666666666666666,"wnd_prob":0.5,"dmg_avg":1.0,"rnd_int":0,"abilities":"None"}]},{"id":"scryhawk-lanthorn","name":"Scryhawk Lanthorn","army":"Lumineth Realm-lords","faction":"Scinari","role":"Other","pts":80,"size":1,"weapons":[{"name":"Scryhawk Talons","type":"Melee","atk":"3","hit":"4+","wnd":"4+","rnd":"-","dmg":"1","atk_avg":3.0,"hit_prob":0.5,"wnd_prob":0.5,"dmg_avg":1.0,"rnd_int":0,"abilities":"None"}]},{"id":"akhelian-king","name":"Akhelian King","army":"Idoneth Deepkin","faction":"Akhelian","role":"Leader","pts":160,"size":1,"weapons":[{"name":"Akhelian Royal Weapons","type":"Melee","atk":"5","hit":"3+","wnd":"4+","rnd":"-1","dmg":"2","atk_avg":5.0,"hit_prob":0.6666666666666666,"wnd_prob":0.5,"dmg_avg":2.0,"rnd_int":-1,"abilities":"None"},{"name":"Deepmare\u2019s Fangs, Talons and Lashing Tails","type":"Melee","atk":"4","hit":"4+","wnd":"3+","rnd":"-1","dmg":"2","atk_avg":4.0,"hit_prob":0.5,"wnd_prob":0.6666666666666666,"dmg_avg":2.0,"rnd_int":-1,"abilities":"None"}]},{"id":"volturnos-high-king-of-the-deep","name":"Volturnos, High King of the Deep","army":"Idoneth Deepkin","faction":"Akhelian","role":"Leader","pts":230,"size":1,"weapons":[{"name":"Uasall\u2019s Fangs, Talons and Lashing Tails","type":"Melee","atk":"4","hit":"4+","wnd":"3+","rnd":"-1","dmg":"2","atk_avg":4.0,"hit_prob":0.5,"wnd_prob":0.6666666666666666,"dmg_avg":2.0,"rnd_int":-1,"abilities":"None"},{"name":"The Astra Solus","type":"Melee","atk":"6","hit":"2+","wnd":"3+","rnd":"-1","dmg":"2","atk_avg":6.0,"hit_prob":0.8333333333333334,"wnd_prob":0.6666666666666666,"dmg_avg":2.0,"rnd_int":-1,"abilities":"None"}]},{"id":"akhelian-thrallmaster","name":"Akhelian Thrallmaster","army":"Idoneth Deepkin","faction":"Akhelian","role":"Leader","pts":90,"size":1,"weapons":[{"name":"Esoteric Weapons","type":"Melee","atk":"6","hit":"3+","wnd":"4+","rnd":"-1","dmg":"2","atk_avg":6.0,"hit_prob":0.6666666666666666,"wnd_prob":0.5,"dmg_avg":2.0,"rnd_int":-1,"abilities":"None"}]},{"id":"ikon-of-the-sea","name":"Ikon of the Sea","army":"Idoneth Deepkin","faction":"Akhelian","role":"Leader","pts":130,"size":1,"weapons":[{"name":"Tidal Glaive","type":"Melee","atk":"5","hit":"3+","wnd":"3+","rnd":"-1","dmg":"2","atk_avg":5.0,"hit_prob":0.6666666666666666,"wnd_prob":0.6666666666666666,"dmg_avg":2.0,"rnd_int":-1,"abilities":"None"}]},{"id":"ikon-of-the-storm","name":"Ikon of the Storm","army":"Idoneth Deepkin","faction":"Akhelian","role":"Leader","pts":120,"size":1,"weapons":[{"name":"Maelstrom Blades","type":"Melee","atk":"7","hit":"3+","wnd":"4+","rnd":"-1","dmg":"2","atk_avg":7.0,"hit_prob":0.6666666666666666,"wnd_prob":0.5,"dmg_avg":2.0,"rnd_int":-1,"abilities":"None"}]},{"id":"isharann-soulrender","name":"Isharann Soulrender","army":"Idoneth Deepkin","faction":"Isharann","role":"Leader","pts":90,"size":1,"weapons":[{"name":"Tal\u00fanhook","type":"Melee","atk":"4","hit":"3+","wnd":"4+","rnd":"-1","dmg":"2","atk_avg":4.0,"hit_prob":0.6666666666666666,"wnd_prob":0.5,"dmg_avg":2.0,"rnd_int":-1,"abilities":"None"},{"name":"Rakerdart\u2019s Serrated Bill","type":"Melee","atk":"3","hit":"4+","wnd":"4+","rnd":"-1","dmg":"1","atk_avg":3.0,"hit_prob":0.5,"wnd_prob":0.5,"dmg_avg":1.0,"rnd_int":-1,"abilities":"None"}]},{"id":"isharann-soulscryer","name":"Isharann Soulscryer","army":"Idoneth Deepkin","faction":"Isharann","role":"Leader","pts":120,"size":1,"weapons":[{"name":"Abyssal Touch","type":"Melee","atk":"4","hit":"3+","wnd":"4+","rnd":"-","dmg":"D3","atk_avg":4.0,"hit_prob":0.6666666666666666,"wnd_prob":0.5,"dmg_avg":2.0,"rnd_int":0,"abilities":"None"}]},{"id":"isharann-tidecaster","name":"Isharann Tidecaster","army":"Idoneth Deepkin","faction":"Isharann","role":"Leader","pts":110,"size":1,"weapons":[{"name":"Pelagic Staff","type":"Melee","atk":"4","hit":"3+","wnd":"4+","rnd":"-1","dmg":"D3","atk_avg":4.0,"hit_prob":0.6666666666666666,"wnd_prob":0.5,"dmg_avg":2.0,"rnd_int":-1,"abilities":"None"}]},{"id":"lotann-warden-of-the-soul-ledgers","name":"Lotann, Warden of the Soul Ledgers","army":"Idoneth Deepkin","faction":"Isharann","role":"Leader","pts":100,"size":1,"weapons":[{"name":"Meloch\u2019s Tentacles and Weapons","type":"Melee","atk":"8","hit":"4+","wnd":"4+","rnd":"-1","dmg":"1","atk_avg":8.0,"hit_prob":0.5,"wnd_prob":0.5,"dmg_avg":1.0,"rnd_int":-1,"abilities":"None"}]},{"id":"mathaela-oracle-of-the-abyss","name":"Mathaela, Oracle of the Abyss","army":"Idoneth Deepkin","faction":"Isharann","role":"Leader","pts":160,"size":1,"weapons":[{"name":"Riptide Blast","type":"Ranged","atk":"3","hit":"2+","wnd":"4+","rnd":"-1","dmg":"D3","atk_avg":3.0,"hit_prob":0.8333333333333334,"wnd_prob":0.5,"dmg_avg":2.0,"rnd_int":-1,"abilities":"None"},{"name":"Staff of the Abyss","type":"Melee","atk":"3","hit":"3+","wnd":"4+","rnd":"-1","dmg":"D3","atk_avg":3.0,"hit_prob":0.6666666666666666,"wnd_prob":0.5,"dmg_avg":2.0,"rnd_int":-1,"abilities":"None"},{"name":"Dark Shoal\u2019s Ferocious Bites","type":"Melee","atk":"5","hit":"4+","wnd":"3+","rnd":"-1","dmg":"1","atk_avg":5.0,"hit_prob":0.5,"wnd_prob":0.6666666666666666,"dmg_avg":1.0,"rnd_int":-1,"abilities":"None"}]},{"id":"scourge-of-ghyran-akhelian-thrallmaster","name":"Scourge of Ghyran Akhelian Thrallmaster","army":"Idoneth Deepkin","faction":"Akhelian","role":"Leader","pts":90,"size":1,"weapons":[{"name":"Esoteric Weapons","type":"Melee","atk":"6","hit":"3+","wnd":"4+","rnd":"-1","dmg":"2","atk_avg":6.0,"hit_prob":0.6666666666666666,"wnd_prob":0.5,"dmg_avg":2.0,"rnd_int":-1,"abilities":"None"}]},{"id":"eidolon-of-mathlann-aspect-of-the-sea","name":"Eidolon of Mathlann, Aspect of the Sea","army":"Idoneth Deepkin","faction":"Eidolon","role":"Leader","pts":350,"size":1,"weapons":[{"name":"Blasts of Abyssal Energy","type":"Ranged","atk":"3","hit":"3+","wnd":"3+","rnd":"-2","dmg":"D3","atk_avg":3.0,"hit_prob":0.6666666666666666,"wnd_prob":0.6666666666666666,"dmg_avg":2.0,"rnd_int":-2,"abilities":"None"},{"name":"Psi-trident and Deep\u2011sea Sceptre","type":"Melee","atk":"7","hit":"3+","wnd":"3+","rnd":"-1","dmg":"D3","atk_avg":7.0,"hit_prob":0.6666666666666666,"wnd_prob":0.6666666666666666,"dmg_avg":2.0,"rnd_int":-1,"abilities":"None"}]},{"id":"eidolon-of-mathlann-aspect-of-the-storm","name":"Eidolon of Mathlann, Aspect of the Storm","army":"Idoneth Deepkin","faction":"Eidolon","role":"Leader","pts":320,"size":1,"weapons":[{"name":"Spear of Repressed Fury and Crulhook","type":"Melee","atk":"7","hit":"3+","wnd":"2+","rnd":"-2","dmg":"2","atk_avg":7.0,"hit_prob":0.6666666666666666,"wnd_prob":0.8333333333333334,"dmg_avg":2.0,"rnd_int":-2,"abilities":"None"}]},{"id":"akhelian-allopex","name":"Akhelian Allopex","army":"Idoneth Deepkin","faction":"Akhelian","role":"Other","pts":160,"size":1,"weapons":[{"name":"Razorshell Harpoon","type":"Ranged","atk":"2","hit":"3+","wnd":"2+","rnd":"-1","dmg":"3","atk_avg":2.0,"hit_prob":0.6666666666666666,"wnd_prob":0.8333333333333334,"dmg_avg":3.0,"rnd_int":-1,"abilities":"None"},{"name":"Retarius Net Launcher","type":"Ranged","atk":"2","hit":"3+","wnd":"2+","rnd":"-1","dmg":"3","atk_avg":2.0,"hit_prob":0.6666666666666666,"wnd_prob":0.8333333333333334,"dmg_avg":3.0,"rnd_int":-1,"abilities":"None"},{"name":"Allopex\u2019s Ferocious Bite","type":"Melee","atk":"3","hit":"4+","wnd":"2+","rnd":"-2","dmg":"2","atk_avg":3.0,"hit_prob":0.5,"wnd_prob":0.8333333333333334,"dmg_avg":2.0,"rnd_int":-2,"abilities":"None"},{"name":"Barbed Hooks and Blades","type":"Melee","atk":"4","hit":"3+","wnd":"4+","rnd":"-1","dmg":"1","atk_avg":4.0,"hit_prob":0.6666666666666666,"wnd_prob":0.5,"dmg_avg":1.0,"rnd_int":-1,"abilities":"None"}]},{"id":"akhelian-ishlaen-guard","name":"Akhelian Ishlaen Guard","army":"Idoneth Deepkin","faction":"Akhelian","role":"Battleline","pts":180,"size":3,"weapons":[{"name":"Helsabre","type":"Melee","atk":"3","hit":"3+","wnd":"4+","rnd":"-1","dmg":"1","atk_avg":3.0,"hit_prob":0.6666666666666666,"wnd_prob":0.5,"dmg_avg":1.0,"rnd_int":-1,"abilities":"None"},{"name":"Fangmora\u2019s Fangs and Lashing Tail","type":"Melee","atk":"3","hit":"4+","wnd":"3+","rnd":"-1","dmg":"D3","atk_avg":3.0,"hit_prob":0.5,"wnd_prob":0.6666666666666666,"dmg_avg":2.0,"rnd_int":-1,"abilities":"None"}]},{"id":"akhelian-morrsarr-guard","name":"Akhelian Morrsarr Guard","army":"Idoneth Deepkin","faction":"Akhelian","role":"Battleline","pts":170,"size":3,"weapons":[{"name":"Voltspear","type":"Melee","atk":"2","hit":"3+","wnd":"4+","rnd":"-1","dmg":"1","atk_avg":2.0,"hit_prob":0.6666666666666666,"wnd_prob":0.5,"dmg_avg":1.0,"rnd_int":-1,"abilities":"None"},{"name":"Fangmora\u2019s Fangs and Lashing Tail","type":"Melee","atk":"3","hit":"4+","wnd":"3+","rnd":"-1","dmg":"D3","atk_avg":3.0,"hit_prob":0.5,"wnd_prob":0.6666666666666666,"dmg_avg":2.0,"rnd_int":-1,"abilities":"None"}]},{"id":"namarti-reavers","name":"Namarti Reavers","army":"Idoneth Deepkin","faction":"Namarti","role":"Battleline","pts":140,"size":10,"weapons":[{"name":"Whisperbow","type":"Ranged","atk":"2","hit":"3+","wnd":"4+","rnd":"0","dmg":"1","atk_avg":2.0,"hit_prob":0.6666666666666666,"wnd_prob":0.5,"dmg_avg":1.0,"rnd_int":0,"abilities":"Crit: Auto-wound"},{"name":"Keening Blade","type":"Melee","atk":"1","hit":"3+","wnd":"4+","rnd":"-","dmg":"1","atk_avg":1.0,"hit_prob":0.6666666666666666,"wnd_prob":0.5,"dmg_avg":1.0,"rnd_int":0,"abilities":"None"}]},{"id":"namarti-thralls","name":"Namarti Thralls","army":"Idoneth Deepkin","faction":"Namarti","role":"Battleline","pts":100,"size":10,"weapons":[{"name":"Lanmari","type":"Melee","atk":"2","hit":"3+","wnd":"4+","rnd":"-1","dmg":"1","atk_avg":2.0,"hit_prob":0.6666666666666666,"wnd_prob":0.5,"dmg_avg":1.0,"rnd_int":-1,"abilities":"None"}]},{"id":"scourge-of-ghyran-namarti-thralls","name":"Scourge of Ghyran Namarti Thralls","army":"Idoneth Deepkin","faction":"Namarti","role":"Battleline","pts":100,"size":10,"weapons":[{"name":"Lanmari","type":"Melee","atk":"2","hit":"3+","wnd":"4+","rnd":"-1","dmg":"1","atk_avg":2.0,"hit_prob":0.6666666666666666,"wnd_prob":0.5,"dmg_avg":1.0,"rnd_int":-1,"abilities":"None"}]},{"id":"akhelian-leviadon","name":"Akhelian Leviadon","army":"Idoneth Deepkin","faction":"Akhelian","role":"Behemoth","pts":480,"size":1,"weapons":[{"name":"Razorshell Harpoon Launchers","type":"Ranged","atk":"4","hit":"3+","wnd":"2+","rnd":"-1","dmg":"3","atk_avg":4.0,"hit_prob":0.6666666666666666,"wnd_prob":0.8333333333333334,"dmg_avg":3.0,"rnd_int":-1,"abilities":"None"},{"name":"Leviadon\u2019s Scythed Fins and Crushing Jaws","type":"Melee","atk":"7","hit":"4+","wnd":"2+","rnd":"-2","dmg":"3","atk_avg":7.0,"hit_prob":0.5,"wnd_prob":0.8333333333333334,"dmg_avg":3.0,"rnd_int":-2,"abilities":"Crit: Mortal"},{"name":"Crew\u2019s Spears and Harpoons","type":"Melee","atk":"4","hit":"3+","wnd":"4+","rnd":"-1","dmg":"1","atk_avg":4.0,"hit_prob":0.6666666666666666,"wnd_prob":0.5,"dmg_avg":1.0,"rnd_int":-1,"abilities":"None"}]},{"id":"abyssal-tendril","name":"Abyssal Tendril","army":"Idoneth Deepkin","faction":"Akhelian","role":"Other","pts":0,"size":1,"weapons":[{"name":"Freezing Grasp","type":"Melee","atk":"4","hit":"4+","wnd":"2+","rnd":"-1","dmg":"D3","atk_avg":4.0,"hit_prob":0.5,"wnd_prob":0.8333333333333334,"dmg_avg":2.0,"rnd_int":-1,"abilities":"None"}]},{"id":"incarnate-of-the-deep","name":"Incarnate of the Deep","army":"Idoneth Deepkin","faction":"Akhelian","role":"Behemoth","pts":0,"size":1,"weapons":[{"name":"Crushing Maw and Scything Waves","type":"Melee","atk":"6","hit":"4+","wnd":"2+","rnd":"-1","dmg":"3","atk_avg":6.0,"hit_prob":0.5,"wnd_prob":0.8333333333333334,"dmg_avg":3.0,"rnd_int":-1,"abilities":"None"}]}];
+
+const ARMIES=[...new Set(DB.map(u=>u.army))];
+const ROLES=['Leader','Battleline','Artillery','Behemoth','Other'];
+const ARMY_COLORS={'Skaven':'#c9922a','Lumineth Realm-lords':'#5b9fc0','Idoneth Deepkin':'#2dd4bf','Blades of Khorne':'#c0392b'};
+const ARMY_ACCENT={'Skaven':'var(--gold)','Lumineth Realm-lords':'var(--acc2)','Idoneth Deepkin':'#2dd4bf','Blades of Khorne':'var(--red2)'};
+
+// ── Damage calc ──────────────────────────────────────────────────────────────
+function calcAvgDmg(w, save, size){
+  const atk=w.atk_avg, hit=w.hit_prob, wnd=w.wnd_prob, dmg=w.dmg_avg, rv=w.rnd_int;
+  if([atk,hit,wnd,dmg].some(x=>x==null||x===undefined||isNaN(x))) return null;
+  const sz = size||1;
+  const eff=Math.max(2,Math.min(7,save-rv));
+  const sf=Math.min(1,Math.max(0,(eff-1)/6));
+  const ab=String(w.abilities||'');
+  const hasChamp=ab.includes('Champion');
+  const hasMort=ab.includes('Crit: Mortal');
+  const has2Hit=ab.includes('Crit: 2 Hits');
+  const hasAuto=ab.includes('Crit: Auto-wound');
+  const tot=sz*atk;
+  let avg;
+  if(hasMort&&hasAuto)      avg=tot*((1/6)*dmg+Math.max(0,hit-1/6)*sf*dmg);
+  else if(hasMort&&has2Hit) avg=tot*((1/6)*dmg+(Math.max(0,hit-1/6)+1/6)*wnd*sf*dmg);
+  else if(hasMort)          avg=tot*((1/6)*dmg+Math.max(0,hit-1/6)*wnd*sf*dmg);
+  else if(has2Hit&&hasAuto) avg=tot*((2/6)*sf*dmg+Math.max(0,hit-1/6)*wnd*sf*dmg);
+  else if(has2Hit)          avg=tot*Math.max(0,hit+1/6)*wnd*sf*dmg;
+  else if(hasAuto)          avg=tot*((1/6)*sf*dmg+Math.max(0,hit-1/6)*wnd*sf*dmg);
+  else                      avg=tot*hit*wnd*sf*dmg;
+  return avg;
+}
+
+function unitTotalDmg(unit, save){
+  // Sum best weapon's avg dmg (highest) across all weapons
+  let best=null;
+  for(const w of unit.weapons){
+    const a=calcAvgDmg(w, save, unit.size);
+    if(a!=null && (best==null||a>best)) best=a;
+  }
+  return best;
+}
+
+// ── State ────────────────────────────────────────────────────────────────────
+const S={
+  tab:'combat',
+  save:4,  // global opponent save
+  combat:{attacks:5,toHit:3,toWound:3,rend:1,damage:'1',saveChar:4,fnp:'none',
+    rerollHits:'none',rerollWounds:'none',mortalsOn6:false,result:null,simResult:null},
+  battle:{round:1,activePlayer:1,cp:[3,3],vp:[0,0],
+    units:[{id:1,name:'Warrior Unit',wounds:10,maxWounds:10,player:0},
+           {id:2,name:'Enemy Unit',wounds:8,maxWounds:8,player:1}],
+    newName:'',newWounds:10,newPlayer:0,
+    armies:[],  // saved roster refs for battle panel
+    showArmyPicker:false},
+  roster:{
+    armies:[{id:1,name:'My Warhost',army:'Skaven',units:[],limit:2000}],
+    active:1,expanded:{},editing:{},showModal:false,
+    search:'',filterArmy:'Skaven',filterFaction:'All',filterRole:'All',pickingArmy:false,
+  },
+  dice:{dtype:6,count:5,results:[],rolling:false,history:[]},
+};
+
+const roll=d=>Math.floor(Math.random()*d)+1;
+const rollN=(n,d)=>Array.from({length:n},()=>roll(d));
+
+function avgCombat(c){
+  const rh=c.rerollHits,rw=c.rerollWounds;
+  const hc=rh==='all'?(7-c.toHit)/6+((c.toHit-1)/6)*((7-c.toHit)/6):rh==='ones'?(7-c.toHit)/6+(1/6)*((7-c.toHit)/6):(7-c.toHit)/6;
+  const wc=rw==='all'?(7-c.toWound)/6+((c.toWound-1)/6)*((7-c.toWound)/6):rw==='ones'?(7-c.toWound)/6+(1/6)*((7-c.toWound)/6):(7-c.toWound)/6;
+  const eff=Math.min(6,c.saveChar+c.rend),fs=Math.min(1,(eff-1)/6),dmg=c.damage==='d6'?3.5:+c.damage;
+  const fnp=c.fnp!=='none'?(+c.fnp-1)/6:1,mort=c.mortalsOn6?c.attacks*(1/6):0;
+  return (c.attacks*hc*wc*fs*dmg*fnp+mort).toFixed(2);
+}
+function sim1000(c){
+  const res=[];
+  for(let i=0;i<1000;i++){
+    let hits=0,mort=0;
+    rollN(c.attacks,6).forEach(r=>{if(c.mortalsOn6&&r===6)mort++;if(r>=c.toHit)hits++;});
+    const eff=Math.min(6,c.saveChar+c.rend);
+    const wounds=rollN(hits,6).filter(r=>r>=c.toWound).length;
+    const unsaved=rollN(wounds,6).filter(r=>r<eff).length;
+    let dmg=mort;
+    for(let j=0;j<unsaved;j++){const d=c.damage==='d6'?roll(6):+c.damage;dmg+=c.fnp!=='none'&&roll(6)>=+c.fnp?0:d;}
+    res.push(dmg);
+  }
+  const avg=(res.reduce((a,b)=>a+b,0)/1000).toFixed(2);
+  const freq={};res.forEach(d=>freq[d]=(freq[d]||0)+1);
+  return{avg,max:Math.max(...res),min:Math.min(...res),p10:(res.filter(d=>d>=10).length/10).toFixed(1),freq};
+}
+
+// ── DOM builder ──────────────────────────────────────────────────────────────
+function e(tag,attrs,...ch){
+  const el=document.createElement(tag);
+  Object.entries(attrs||{}).forEach(([k,v])=>{
+    if(k==='cls')el.className=v;
+    else if(k==='html')el.innerHTML=v;
+    else if(k.startsWith('on'))el.addEventListener(k.slice(2).toLowerCase(),v);
+    else if(k==='style'&&typeof v==='object')Object.assign(el.style,v);
+    else el.setAttribute(k,v);
+  });
+  ch.flat().forEach(c=>{if(c==null||c===false)return;el.append(typeof c==='string'||typeof c==='number'?document.createTextNode(String(c)):c);});
+  return el;
+}
+function btn(lbl,onClick,cls='btn-ghost'){const b=e('button',{cls:'btn '+cls},lbl);b.onclick=onClick;return b;}
+function icBtn(lbl,onClick,bg='var(--surf3)'){const b=e('button',{cls:'ic-btn',style:{background:bg,border:'none'}},lbl);b.onclick=onClick;return b;}
+function selEl(label,val,onChange,opts){
+  const L=e('label',{style:{display:'flex',flexDirection:'column',gap:'3px'}},e('span',{cls:'lbl'},label));
+  const s=e('select',{},...opts.map(o=>{const op=e('option',{value:o.v},o.l);if(String(o.v)===String(val))op.selected=true;return op;}));
+  s.onchange=ev=>onChange(ev.target.value);L.append(s);return L;
+}
+function inpEl(label,val,onChange,opts={}){
+  const L=e('label',{style:{display:'flex',flexDirection:'column',gap:'3px'}},e('span',{cls:'lbl'},label));
+  const i=e('input',{type:opts.type||'number',value:val,...(opts.min!=null?{min:opts.min}:{}),...(opts.max!=null?{max:opts.max}:{})});
+  i.oninput=ev=>onChange(opts.type==='text'?ev.target.value:+ev.target.value);L.append(i);return L;
+}
+function tog(label,checked,onChange){
+  const track=e('div',{cls:'toggle-track',style:{background:checked?'var(--gold)':'var(--surf3)'}},e('div',{cls:'toggle-thumb',style:{background:checked?'#0d0d10':'var(--txtd)',left:checked?'18px':'2px'}}));
+  const w=e('div',{cls:'toggle-wrap'},track,e('span',{style:{color:'var(--txtd)',fontSize:'12px'}},label));
+  w.onclick=()=>onChange(!checked);return w;
+}
+function dmgBadge(val){
+  if(val==null) return e('span',{cls:'dmg-badge zero'},'N/A');
+  const v=val.toFixed(2);
+  const cls=val>=5?'dmg-badge good':'dmg-badge';
+  return e('span',{cls},v+' dmg');
+}
+function wTable(weapons,save,size){
+  const wrap=e('div',{style:{overflowX:'auto',marginTop:'8px'}});
+  wrap.append(e('div',{cls:'w-row w-hdr'},e('span',{},'Weapon'),e('span',{},'Type'),e('span',{},'Atk'),e('span',{},'Hit/Wnd'),e('span',{},'Rnd/Dmg'),e('span',{},'Avg Dmg')));
+  weapons.forEach(w=>{
+    const avg=calcAvgDmg(w,save,size);
+    wrap.append(e('div',{cls:'w-row'},
+      e('span',{style:{color:'var(--txt)',fontWeight:'600',fontSize:'12px'}},w.name),
+      e('span',{style:{color:'var(--txtd)',fontSize:'11px'}},w.type),
+      e('span',{},w.atk),e('span',{},w.hit+'/'+w.wnd),
+      e('span',{style:{color:'var(--txtd)'}},w.rnd+'/'+w.dmg),
+      avg!=null?e('span',{style:{color:avg>=5?'var(--grn2)':'var(--gold)',fontWeight:'700',fontFamily:"'Cinzel',serif",fontSize:'12px'}},avg.toFixed(2)):e('span',{style:{color:'var(--txtf)'}}, 'N/A')
+    ));
+    if(w.abilities&&w.abilities!=='None'){
+      wrap.append(e('div',{style:{paddingLeft:'0',paddingBottom:'3px'}},e('span',{cls:'ab-tag'},'\u26a1 '+w.abilities)));
+    }
+  });
+  return wrap;
+}
+
+const plusOpts=[2,3,4,5,6].map(v=>({v,l:v+'+'}));
+const rerollOpts=[{v:'none',l:'None'},{v:'ones',l:'Re-roll 1s'},{v:'all',l:'Re-roll fails'}];
+const fnpOpts=[{v:'none',l:'None'},{v:6,l:'6+'},{v:5,l:'5+'},{v:4,l:'4+'}];
+const dmgOpts=['1','2','3','4','5','6','d6'].map(v=>({v,l:v==='d6'?'D6':v}));
+
+// ── HEADER with save selector ────────────────────────────────────────────────
+function renderHeader(){
+  const saveOptions=[{v:2,l:'2+'},{v:3,l:'3+'},{v:4,l:'4+'},{v:5,l:'5+'},{v:6,l:'6+'},{v:7,l:'No save'}];
+  return e('div',{cls:'hdr'},
+    e('div',{cls:'hdr-eye'},'Age of Sigmar'),
+    e('div',{cls:'hdr-title'},'Battle',e('span',{},'forge')),
+    e('div',{cls:'hdr-sub'},'Combat · Battle · Roster · Dice'),
+    e('div',{cls:'save-bar'},
+      e('span',{cls:'save-label'},'Opponent Save:'),
+      ...saveOptions.map(o=>{
+        const b=e('button',{cls:'save-btn'+(S.save===o.v?' on':'')},o.l);
+        b.onclick=()=>{S.save=o.v;render();};return b;
+      }),
+      e('span',{cls:'save-hint'},'— used for avg damage across all units')
+    )
+  );
+}
+
+// ── COMBAT TAB ───────────────────────────────────────────────────────────────
+function renderCombat(c){
+  const s=S.combat;
+  c.append(e('div',{cls:'sec-title'},'\u2694\uFE0F Combat Calculator'));
+  const g=e('div',{cls:'grid gfill'});
+  const set=(k,v)=>{s[k]=v;c.innerHTML='';renderCombat(c);};
+  g.append(inpEl('Attacks',s.attacks,v=>set('attacks',v),{min:1,max:50}),selEl('To Hit',s.toHit,v=>set('toHit',+v),plusOpts),selEl('To Wound',s.toWound,v=>set('toWound',+v),plusOpts),inpEl('Rend',s.rend,v=>set('rend',v),{min:0,max:3}),selEl('Damage',s.damage,v=>set('damage',v),dmgOpts),selEl('Save',s.saveChar,v=>set('saveChar',+v),plusOpts),selEl('FNP',s.fnp,v=>set('fnp',v),fnpOpts));
+  c.append(g);
+  c.append(e('div',{cls:'sep'},e('div',{cls:'sep-line'}),e('span',{cls:'sep-lbl'},'Abilities'),e('div',{cls:'sep-line r'})));
+  const ar=e('div',{style:{display:'flex',flexWrap:'wrap',gap:'10px',marginBottom:'12px',alignItems:'flex-end'}});
+  ar.append(selEl('Re-roll Hits',s.rerollHits,v=>set('rerollHits',v),rerollOpts),selEl('Re-roll Wounds',s.rerollWounds,v=>set('rerollWounds',v),rerollOpts),e('div',{style:{paddingBottom:'4px'}},tog('Mortals on 6',s.mortalsOn6,v=>set('mortalsOn6',v))));
+  c.append(ar);
+  const ra=e('div',{id:'cresult'});
+  function refresh(el){
+    const t=el||document.getElementById('cresult');if(!t)return;t.innerHTML='';
+    if(s.result){t.append(e('div',{cls:'dcard',style:{borderColor:'var(--goldd)'}},e('span',{cls:'lbl'},'Expected Damage'),e('div',{cls:'big-val',style:{fontSize:'46px'}},s.result.avg)));}
+    if(s.simResult){
+      const r=s.simResult;
+      const sg=e('div',{cls:'grid g4',style:{marginBottom:'12px'}});
+      [[r.avg,'Avg Dmg','var(--gold)'],[r.min+'/'+r.max,'Min/Max','var(--txt)'],[r.p10+'%','\u226510 Dmg','var(--red2)'],['1,000','Sims','var(--txtd)']].forEach(([v,l,col])=>{
+        sg.append(e('div',{style:{textAlign:'center'}},e('span',{cls:'lbl',style:{display:'block',marginBottom:'2px',textAlign:'center'}},l),e('div',{cls:'stat-val',style:{color:col,textAlign:'center'}},v)));
+      });
+      const entries=Object.entries(r.freq).sort((a,b)=>+a[0]-+b[0]);
+      const mf=Math.max(...entries.map(x=>x[1]));
+      const bars=e('div',{style:{display:'flex',alignItems:'flex-end',gap:'2px',height:'54px',marginTop:'6px'}});
+      entries.forEach(([d,cnt])=>{const p=cnt/mf;bars.append(e('div',{style:{flex:'1',minWidth:'0',display:'flex',flexDirection:'column',alignItems:'center'}},e('div',{title:d+' dmg',style:{width:'100%',background:'var(--gold)',opacity:'.8',height:Math.max(2,p*48)+'px',borderRadius:'2px 2px 0 0'}}),e('div',{style:{color:'var(--txtf)',fontSize:'9px',marginTop:'2px'}},+d%3===0?d:'')));});
+      t.append(e('div',{cls:'dcard',style:{borderColor:'var(--goldd)'}},sg,e('div',{style:{color:'var(--txtf)',fontSize:'10px',letterSpacing:'1px',textTransform:'uppercase',marginBottom:'4px',fontFamily:"'Cinzel',serif"}},'Distribution'),bars));
+    }
+  }
+  const br=e('div',{style:{display:'flex',gap:'8px',marginBottom:'12px'}});
+  br.append(btn('Average Damage',()=>{s.result={avg:avgCombat(s)};s.simResult=null;refresh();},'btn-gold'),btn('Simulate 1,000\xd7',()=>{s.simResult=sim1000(s);s.result=null;refresh();},'btn-ghost'));
+  c.append(br);refresh(ra);c.append(ra);
+}
+
+// ── BATTLE TAB ───────────────────────────────────────────────────────────────
+function renderBattle(c){
+  const s=S.battle;
+  const rd=()=>{c.innerHTML='';renderBattle(c);};
+  c.append(e('div',{cls:'sec-title'},'\uD83E\uDE78 Battle Tracker'));
+  // Round / Player
+  const tg=e('div',{cls:'grid g2'});
+  tg.append(
+    e('div',{cls:'dcard',style:{textAlign:'center'}},e('span',{cls:'lbl',style:{display:'block',marginBottom:'5px'}},'Round'),
+      e('div',{style:{display:'flex',alignItems:'center',justifyContent:'center',gap:'14px'}},icBtn('\u25c4',()=>{if(s.round>1){s.round--;rd();}},'var(--surf3)'),e('div',{cls:'big-val'},s.round),icBtn('\u25ba',()=>{if(s.round<5){s.round++;rd();}},'var(--surf3)')),
+      e('div',{style:{display:'flex',justifyContent:'center',gap:'5px',marginTop:'7px'}},...[1,2,3,4,5].map(r=>e('div',{style:{width:'7px',height:'7px',borderRadius:'4px',background:r<=s.round?'var(--gold)':'var(--surf3)',border:'1px solid var(--goldd)',transition:'background .3s'}})))),
+    e('div',{cls:'dcard',style:{textAlign:'center'}},e('span',{cls:'lbl',style:{display:'block',marginBottom:'5px'}},'Active Player'),
+      e('div',{style:{display:'flex',alignItems:'center',justifyContent:'center',gap:'14px'}},icBtn('\u21c4',()=>{s.activePlayer=s.activePlayer===1?2:1;rd();},'var(--surf3)'),e('div',{cls:'big-val',style:{color:s.activePlayer===1?'var(--acc2)':'var(--red2)'}}, 'P'+s.activePlayer)),
+      e('div',{style:{color:'var(--txtf)',fontSize:'12px',marginTop:'7px'}},'Player '+s.activePlayer+' activates'))
+  );c.append(tg);
+  // CP/VP
+  const cg=e('div',{cls:'grid g2',style:{marginTop:'10px'}});
+  [0,1].forEach(p=>{
+    const pc=p===0?'var(--acc2)':'var(--red2)';
+    const card=e('div',{cls:'dcard'},e('div',{style:{color:pc,fontSize:'10px',letterSpacing:'2px',textTransform:'uppercase',marginBottom:'7px',fontFamily:"'Cinzel',serif",fontWeight:'700'}},'Player '+(p+1)));
+    const ig=e('div',{cls:'grid g2'});
+    ['cp','vp'].forEach((key,ki)=>{
+      const ve=e('span',{style:{fontFamily:"'Cinzel',serif",fontSize:'19px',fontWeight:'700',color:ki===0?'var(--gold)':pc,minWidth:'22px',textAlign:'center'}},s[key][p]);
+      ig.append(e('div',{},e('span',{cls:'lbl'},ki===0?'Cmd Pts':'Victory Pts'),e('div',{style:{display:'flex',alignItems:'center',gap:'6px',marginTop:'3px'}},icBtn('\u2212',()=>{if(s[key][p]>0){s[key][p]--;rd();}},'var(--surf3)'),ve,icBtn('+',()=>{s[key][p]++;rd();},'var(--surf3)'))));
+    });
+    card.append(ig);cg.append(card);
+  });c.append(cg);
+  // Unit wound tracker
+  c.append(e('div',{cls:'sep'},e('div',{cls:'sep-line'}),e('span',{cls:'sep-lbl'},'Units'),e('div',{cls:'sep-line r'})));
+  const ar=e('div',{style:{display:'flex',flexWrap:'wrap',gap:'7px',marginBottom:'9px',alignItems:'center'}});
+  const ni=e('input',{type:'text',placeholder:'Unit name...',value:s.newName,style:{flex:'1',minWidth:'120px'}});ni.oninput=ev=>s.newName=ev.target.value;ni.onkeydown=ev=>{if(ev.key==='Enter')addU();};
+  const wi=e('input',{type:'number',value:s.newWounds,min:1,max:50,style:{width:'54px'}});wi.oninput=ev=>s.newWounds=+ev.target.value;
+  const ps=e('select',{style:{width:'56px'}},e('option',{value:0},'P1'),e('option',{value:1},'P2'));ps.value=s.newPlayer;ps.onchange=ev=>s.newPlayer=+ev.target.value;
+  ar.append(ni,wi,ps,btn('+ Add',addU,'btn-gold'));c.append(ar);
+  function addU(){if(!s.newName.trim())return;s.units.push({id:Date.now(),name:s.newName,wounds:s.newWounds,maxWounds:s.newWounds,player:s.newPlayer});s.newName='';s.newWounds=10;rd();}
+  const ug=e('div',{style:{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(200px,1fr))',gap:'7px'}});
+  s.units.forEach(unit=>{
+    const pct=unit.wounds/unit.maxWounds,bc=pct>0.6?'var(--grn2)':pct>0.3?'var(--gold)':'var(--red2)',pc=unit.player===0?'var(--acc2)':'var(--red2)';
+    ug.append(e('div',{style:{background:'var(--surf)',border:'1px solid '+(unit.wounds===0?'var(--red)':'var(--bdr)'),borderRadius:'4px',padding:'9px 11px',opacity:unit.wounds===0?.5:1}},
+      e('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'4px'}},
+        e('div',{},e('span',{style:{color:pc,fontSize:'10px',fontWeight:'700',marginRight:'4px',fontFamily:"'Cinzel',serif"}},'P'+(unit.player+1)),e('span',{style:{fontSize:'12px',fontWeight:'600',color:unit.wounds===0?'var(--red2)':'var(--txt)'}},unit.name+(unit.wounds===0?' \u2620':''))),
+        icBtn('\u2715',()=>{S.battle.units=S.battle.units.filter(u=>u.id!==unit.id);rd();},'transparent')),
+      e('div',{cls:'pts-bar-wrap'},e('div',{cls:'pts-bar',style:{width:pct*100+'%',background:bc}})),
+      e('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between',marginTop:'5px'}},
+        e('div',{style:{display:'flex',gap:'3px'}},icBtn('\u2212',()=>{unit.wounds=Math.max(0,unit.wounds-1);rd();},'var(--red)'),icBtn('\u2620',()=>{unit.wounds=0;rd();},'var(--red2)')),
+        e('span',{style:{fontFamily:"'Cinzel',serif",fontSize:'13px',fontWeight:'700',color:'var(--gold)'}},unit.wounds,e('span',{style:{color:'var(--txtf)',fontSize:'11px'}},'/'+unit.maxWounds)),
+        e('div',{style:{display:'flex',gap:'3px'}},icBtn('\u27f3',()=>{unit.wounds=unit.maxWounds;rd();},'var(--grn)'),icBtn('+',()=>{unit.wounds=Math.min(unit.maxWounds,unit.wounds+1);rd();},'var(--grn2)')))));
+  });c.append(ug);
+
+  // ── Army damage reference panels ──────────────────────────────────────────
+  c.append(e('div',{cls:'sep'},e('div',{cls:'sep-line'}),e('span',{cls:'sep-lbl'},'Army Damage Reference'),e('div',{cls:'sep-line r'})));
+  const addArmyBtn=btn('+ Add Army from Roster',()=>{s.showArmyPicker=true;rd();},'btn-ghost');
+  c.append(addArmyBtn);
+
+  // Army picker modal
+  if(s.showArmyPicker){
+    const rosters=S.roster.armies.filter(a=>a.units.length>0);
+    if(rosters.length===0){
+      c.append(e('div',{style:{color:'var(--txtf)',fontSize:'13px',fontStyle:'italic',padding:'10px 0'}},'No roster armies with units yet — build one in the Roster tab first.'));
+    } else {
+      const pickerCard=e('div',{cls:'dcard',style:{borderColor:'var(--goldd)',marginTop:'10px'}});
+      pickerCard.append(e('div',{style:{fontFamily:"'Cinzel',serif",fontSize:'12px',color:'var(--gold)',letterSpacing:'2px',textTransform:'uppercase',marginBottom:'10px'}},'Choose a Roster to Add'));
+      rosters.forEach(roster=>{
+        const rb=e('button',{style:{display:'block',width:'100%',background:'var(--surf2)',border:'1px solid var(--bdr)',borderRadius:'3px',padding:'8px 12px',cursor:'pointer',marginBottom:'6px',textAlign:'left',color:'var(--txt)',fontFamily:"'Cinzel',serif",fontSize:'12px',fontWeight:'700',transition:'border-color .2s'}},roster.name+' ('+roster.army+') — '+roster.units.length+' units');
+        rb.onmouseenter=()=>rb.style.borderColor='var(--goldd)';
+        rb.onmouseleave=()=>rb.style.borderColor='var(--bdr)';
+        rb.onclick=()=>{
+          // Add roster to battle armies if not already there
+          if(!s.armies.find(a=>a.rosterId===roster.id)){
+            s.armies.push({rosterId:roster.id,name:roster.name,army:roster.army,units:roster.units});
+          }
+          s.showArmyPicker=false; rd();
+        };
+        pickerCard.append(rb);
+      });
+      pickerCard.append(btn('Cancel',()=>{s.showArmyPicker=false;rd();},'btn-ghost'));
+      c.append(pickerCard);
+    }
+  }
+
+  // Render added army panels
+  s.armies.forEach((armyRef,ai)=>{
+    const ac=ARMY_ACCENT[armyRef.army]||'var(--gold)';
+    const panel=e('div',{cls:'battle-army-panel',style:{borderColor:'var(--bdr)',marginTop:'10px'}});
+    panel.append(
+      e('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'8px'}},
+        e('div',{},
+          e('span',{style:{fontFamily:"'Cinzel',serif",fontSize:'12px',fontWeight:'700',color:ac}},armyRef.name),
+          e('span',{style:{color:'var(--txtd)',fontSize:'11px',marginLeft:'8px'}},'— '+armyRef.army)
+        ),
+        icBtn('\u2715',()=>{s.armies.splice(ai,1);rd();},'transparent')
+      )
+    );
+    // Header row
+    panel.append(e('div',{cls:'battle-unit-row',style:{fontFamily:"'Cinzel',serif",fontSize:'10px',color:'var(--txtd)',letterSpacing:'1px',textTransform:'uppercase'}},
+      e('span',{},'Unit'),e('span',{},'Pts'),e('span',{},'Avg Dmg (vs '+S.save+'+'+')')
+    ));
+    armyRef.units.forEach(runit=>{
+      // Find unit in DB
+      const dbUnit=DB.find(u=>u.name===runit.name&&u.army===armyRef.army);
+      let bestDmg=null;
+      if(dbUnit){
+        const size=(runit.count||1)*dbUnit.size;
+        dbUnit.weapons.forEach(w=>{
+          const a=calcAvgDmg(w,S.save,size);
+          if(a!=null&&(bestDmg==null||a>bestDmg)) bestDmg=a;
+        });
+      }
+      panel.append(e('div',{cls:'battle-unit-row'},
+        e('span',{style:{color:'var(--txt)',fontSize:'13px'}},runit.name+(runit.count>1?' \xd7'+runit.count:'')),
+        e('span',{style:{color:'var(--txtd)',fontSize:'12px'}},runit.pts+' pts'),
+        bestDmg!=null
+          ? e('span',{style:{fontFamily:"'Cinzel',serif",fontWeight:'700',fontSize:'13px',color:bestDmg>=5?'var(--grn2)':'var(--gold)'}},bestDmg.toFixed(2))
+          : e('span',{style:{color:'var(--txtf)',fontSize:'12px'}},'N/A')
+      ));
+    });
+    // Total
+    const totalPts=armyRef.units.reduce((t,u)=>t+u.pts,0);
+    panel.append(e('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',paddingTop:'6px',borderTop:'1px solid var(--bdr)',marginTop:'4px'}},
+      e('span',{style:{fontFamily:"'Cinzel',serif",fontSize:'10px',color:'var(--txtd)',letterSpacing:'1px',textTransform:'uppercase'}},'Total'),
+      e('span',{style:{fontFamily:"'Cinzel',serif",fontSize:'12px',color:'var(--gold)',fontWeight:'700'}},totalPts+' pts')
+    ));
+    c.append(panel);
+  });
+}
+
+// ── ROSTER TAB ───────────────────────────────────────────────────────────────
+function renderRoster(c){
+  const s=S.roster;
+  const getArmy=()=>s.armies.find(a=>a.id===s.active);
+  const rd=()=>{c.innerHTML='';renderRoster(c);};
+  c.append(e('div',{cls:'sec-title'},'\uD83D\uDCCB Army Roster'));
+
+  // Army tabs
+  const tr=e('div',{style:{display:'flex',flexWrap:'wrap',gap:'6px',marginBottom:'10px',alignItems:'center'}});
+  s.armies.forEach(a=>{
+    const ac=ARMY_ACCENT[a.army]||'var(--gold)';
+    const b=e('button',{style:{background:a.id===s.active?'var(--surf3)':'transparent',border:'1px solid '+(a.id===s.active?'var(--goldd)':'var(--bdr)'),color:a.id===s.active?ac:'var(--txtd)',borderRadius:'3px',padding:'4px 10px',cursor:'pointer',fontSize:'10px',fontWeight:'700',letterSpacing:'1px',textTransform:'uppercase',fontFamily:"'Cinzel',serif",transition:'all .2s'}},a.name);
+    b.onclick=()=>{s.active=a.id;rd();};tr.append(b);
+  });
+  const nb=e('button',{style:{background:'transparent',border:'1px solid var(--bdr)',color:'var(--txtd)',borderRadius:'3px',padding:'4px 10px',cursor:'pointer',fontSize:'10px',letterSpacing:'1px',textTransform:'uppercase',fontWeight:'700',fontFamily:"'Cinzel',serif"}},'+ New Roster');
+  nb.onclick=()=>{s.pickingArmy=true;rd();};tr.append(nb);c.append(tr);
+
+  // Army picker
+  if(s.pickingArmy){
+    const nameIn=e('input',{type:'text',placeholder:'Name your army...',style:{marginBottom:'10px'}});
+    let chosenArmy=ARMIES[0];
+    const grid=e('div',{cls:'army-pick-grid'});
+    ARMIES.forEach(army=>{
+      const ac=ARMY_COLORS[army]||'#c9922a';
+      const cnt=DB.filter(u=>u.army===army).length;
+      const ab=e('button',{cls:'army-btn'+(chosenArmy===army?' selected':'')},
+        e('div',{style:{width:'9px',height:'9px',borderRadius:'2px',background:ac,display:'inline-block',marginBottom:'4px'}}),
+        e('div',{cls:'army-btn-name'},army),e('div',{cls:'army-btn-count'},cnt+' units'));
+      ab.onclick=()=>{chosenArmy=army;grid.querySelectorAll('.army-btn').forEach(b=>b.classList.remove('selected'));ab.classList.add('selected');};
+      grid.append(ab);
+    });
+    const confBtn=btn('Create Roster',()=>{
+      const n=nameIn.value.trim()||chosenArmy+' Warhost';
+      const id=Date.now();
+      s.armies.push({id,name:n,army:chosenArmy,units:[],limit:2000});
+      s.active=id;s.pickingArmy=false;rd();
+    },'btn-gold');
+    const canBtn=btn('Cancel',()=>{s.pickingArmy=false;rd();},'btn-ghost');
+    c.append(e('div',{cls:'dcard',style:{borderColor:'var(--goldd)',marginBottom:'12px'}},
+      e('div',{style:{fontFamily:"'Cinzel',serif",fontSize:'12px',color:'var(--gold)',letterSpacing:'2px',textTransform:'uppercase',marginBottom:'10px'}},'Choose Army'),
+      nameIn,grid,e('div',{style:{display:'flex',gap:'8px',marginTop:'9px'}},confBtn,canBtn)));
+    return;
+  }
+
+  const a=getArmy();if(!a)return;
+  const ac=ARMY_ACCENT[a.army]||'var(--gold)';
+  const total=a.units.reduce((t,u)=>t+u.pts,0);
+  const pct=Math.min(1,total/a.limit);
+  const barCol=pct>1?'var(--red2)':pct>0.85?'var(--gold)':'var(--acc2)';
+
+  // Rename army
+  const nameRow=e('div',{style:{display:'flex',gap:'8px',marginBottom:'10px',alignItems:'center'}});
+  const nameIn=e('input',{type:'text',value:a.name,style:{flex:'1',fontSize:'13px'}});
+  nameIn.oninput=ev=>{a.name=ev.target.value;};
+  nameRow.append(e('span',{cls:'lbl',style:{marginBottom:'0',flexShrink:'0'}},'Army name:'),nameIn);
+  c.append(nameRow);
+
+  // Points bar
+  c.append(e('div',{cls:'dcard',style:{marginBottom:'10px'}},
+    e('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'4px'}},
+      e('div',{style:{display:'flex',alignItems:'center',gap:'8px'}},e('span',{style:{fontFamily:"'Cinzel',serif",fontSize:'12px',color:ac,letterSpacing:'1px',fontWeight:'700'}},a.army),e('span',{cls:'lbl',style:{marginBottom:'0'}},'— Points')),
+      e('div',{style:{display:'flex',alignItems:'baseline',gap:'6px'}},
+        e('span',{style:{fontFamily:"'Cinzel',serif",fontSize:'17px',fontWeight:'700',color:pct>1?'var(--red2)':'var(--gold)'}},total),
+        e('span',{style:{color:'var(--txtd)',fontSize:'12px'}},'/'),
+        (()=>{const li=e('input',{type:'number',value:a.limit,min:500,step:500,style:{width:'64px',fontSize:'12px',textAlign:'right',padding:'3px 5px'}});li.oninput=ev=>{a.limit=+ev.target.value;rd();};return li;})()
+      )
+    ),
+    e('div',{cls:'pts-bar-wrap'},e('div',{cls:'pts-bar',style:{width:pct*100+'%',background:barCol}})),
+    e('div',{style:{fontSize:'11px',color:'var(--txtd)',marginTop:'4px'}},pct>1?(total-a.limit)+' pts over limit':(a.limit-total)+' pts remaining')
+  ));
+
+  // DB button
+  const dbBtn=e('button',{style:{background:'linear-gradient(135deg,var(--goldd),var(--gold))',color:'#0d0d10',border:'none',borderRadius:'3px',padding:'8px 16px',cursor:'pointer',fontWeight:'700',fontSize:'11px',letterSpacing:'1px',textTransform:'uppercase',marginBottom:'12px',width:'100%',fontFamily:"'Cinzel',serif"}},'+ Add Units from '+a.army+' Database');
+  dbBtn.onclick=()=>{s.showModal=true;s.filterArmy=a.army;rd();};c.append(dbBtn);
+
+  // Roster units
+  if(a.units.length===0){
+    c.append(e('div',{style:{textAlign:'center',padding:'30px 0',color:'var(--txtf)',fontSize:'13px',fontStyle:'italic'}},'No units yet — open the database above.'));
+  } else {
+    ROLES.forEach(role=>{
+      const ru=a.units.filter(u=>u.role===role);if(!ru.length)return;
+      const rPts=ru.reduce((t,u)=>t+u.pts,0);
+      c.append(e('div',{style:{display:'flex',alignItems:'center',gap:'8px',margin:'10px 0 5px'}},
+        e('span',{cls:'rtag rtag-'+role},role),
+        e('div',{style:{flex:'1',height:'1px',background:'var(--bdr)'}}),
+        e('span',{style:{color:'var(--txtd)',fontSize:'11px',fontFamily:"'Cinzel',serif"}},rPts+' pts')
+      ));
+      ru.forEach(unit=>{
+        const dbUnit=DB.find(u=>u.name===unit.name&&u.army===a.army);
+        const expanded=s.expanded[unit.id];
+        const editing=s.editing[unit.id];
+        const size=(unit.count||1)*(dbUnit?dbUnit.size:1);
+        // Best avg dmg
+        let bestDmg=null;
+        if(dbUnit){
+          dbUnit.weapons.forEach(w=>{const av=calcAvgDmg(w,S.save,size);if(av!=null&&(bestDmg==null||av>bestDmg))bestDmg=av;});
+        }
+        const card=e('div',{cls:'unit-card'});
+        // Header
+        const hdr=e('div',{cls:'unit-hdr',onCLICK:()=>{if(!editing){s.expanded[unit.id]=!expanded;rd();}}},
+          e('div',{style:{display:'flex',alignItems:'center',gap:'8px',flex:'1',flexWrap:'wrap',minWidth:'0'}},
+            e('span',{style:{fontWeight:'600',fontSize:'13px',color:'var(--txt)',whiteSpace:'nowrap'}},unit.name),
+            e('span',{style:{color:'var(--txtd)',fontSize:'11px'}},unit.faction),
+            unit.count>1?e('span',{style:{color:'var(--txtf)',fontSize:'11px'}},'\xd7'+unit.count):null,
+            dmgBadge(bestDmg)
+          ),
+          e('div',{style:{display:'flex',alignItems:'center',gap:'5px',flexShrink:'0'}},
+            // Edit button
+            e('button',{style:{background:editing?'var(--goldd)':'var(--surf3)',border:'none',color:'var(--txt)',borderRadius:'3px',padding:'3px 8px',cursor:'pointer',fontSize:'10px',fontFamily:"'Cinzel',serif",letterSpacing:'1px'},onclick:ev=>{ev.stopPropagation();s.editing[unit.id]=!editing;s.expanded[unit.id]=true;rd();}},editing?'Done':'\u270e Edit'),
+            e('div',{style:{display:'flex',alignItems:'center',gap:'3px'}},
+              e('button',{style:{background:'var(--surf3)',border:'none',color:'var(--txt)',borderRadius:'3px',width:'21px',height:'21px',cursor:'pointer',fontSize:'12px',fontFamily:"'Cinzel',serif"},onclick:ev=>{ev.stopPropagation();unit.count=Math.max(1,(unit.count||1)-1);unit.pts=unit.basePts*(unit.count||1);rd();}},'−'),
+              e('span',{style:{color:'var(--gold)',fontWeight:'700',fontFamily:"'Cinzel',serif",fontSize:'11px',minWidth:'46px',textAlign:'center'}},unit.pts+' pts'),
+              e('button',{style:{background:'var(--surf3)',border:'none',color:'var(--txt)',borderRadius:'3px',width:'21px',height:'21px',cursor:'pointer',fontSize:'12px',fontFamily:"'Cinzel',serif"},onclick:ev=>{ev.stopPropagation();unit.count=(unit.count||1)+1;unit.pts=unit.basePts*(unit.count||1);rd();}},'+')
+            ),
+            e('button',{style:{background:'none',border:'none',color:'var(--txtf)',cursor:'pointer',fontSize:'13px'},onclick:ev=>{ev.stopPropagation();a.units=a.units.filter(u=>u.id!==unit.id);rd();}},'\u2715'),
+            e('span',{style:{color:'var(--txtd)',fontSize:'11px'}},expanded?'\u25b2':'\u25bc')
+          )
+        );
+        card.append(hdr);
+
+        if(expanded&&dbUnit){
+          const body=e('div',{cls:'unit-body'});
+          if(editing){
+            // Edit mode — editable weapon profiles
+            body.append(e('div',{style:{color:'var(--txtd)',fontSize:'11px',marginBottom:'8px',fontFamily:"'Cinzel',serif",letterSpacing:'1px',textTransform:'uppercase'}},'Edit Weapon Profiles'));
+            // Unit size edit
+            const szRow=e('div',{style:{display:'flex',gap:'10px',alignItems:'center',marginBottom:'8px'}});
+            const szIn=e('input',{type:'number',value:dbUnit.size,min:1,max:100,style:{width:'60px'}});
+            szIn.oninput=ev=>{dbUnit.size=+ev.target.value;};
+            const ptsIn=e('input',{type:'number',value:unit.basePts,min:0,style:{width:'70px'}});
+            ptsIn.oninput=ev=>{unit.basePts=+ev.target.value;unit.pts=unit.basePts*(unit.count||1);};
+            szRow.append(e('label',{style:{display:'flex',alignItems:'center',gap:'6px',fontSize:'12px'}},e('span',{cls:'lbl',style:{marginBottom:'0'}},'Unit Size:'),szIn),
+                          e('label',{style:{display:'flex',alignItems:'center',gap:'6px',fontSize:'12px'}},e('span',{cls:'lbl',style:{marginBottom:'0'}},'Base Pts:'),ptsIn));
+            body.append(szRow);
+            // Weapon rows
+            dbUnit.weapons.forEach((w,wi)=>{
+              body.append(e('div',{style:{marginBottom:'8px',padding:'8px',background:'var(--surf2)',borderRadius:'3px',border:'1px solid var(--bdr)'}},
+                e('div',{style:{fontWeight:'600',fontSize:'12px',color:'var(--txt)',marginBottom:'6px'}},w.name),
+                e('div',{cls:'edit-grid'},
+                  ...[
+                    ['Attacks',  w.atk,  v=>{w.atk=v;w.atk_avg=parseFloat(v)||null;}],
+                    ['Hit',      w.hit,  v=>{w.hit=v;const m=v.match(/^(\d+)\+?$/);w.hit_prob=m?Math.max(0,Math.min(1,(7-+m[1])/6)):null;}],
+                    ['Wound',    w.wnd,  v=>{w.wnd=v;const m=v.match(/^(\d+)\+?$/);w.wnd_prob=m?Math.max(0,Math.min(1,(7-+m[1])/6)):null;}],
+                    ['Rend',     w.rnd,  v=>{w.rnd=v;w.rnd_int=parseInt(v)||0;}],
+                    ['Damage',   w.dmg,  v=>{w.dmg=v;w.dmg_avg=parseFloat(v)||null;}],
+                  ].map(([lbl,val,fn])=>{
+                    const lel=e('label',{style:{display:'flex',flexDirection:'column',gap:'2px'}},e('span',{cls:'lbl'},lbl));
+                    const inp=e('input',{type:'text',value:val,style:{fontSize:'12px',padding:'3px 6px'}});
+                    inp.oninput=ev=>{fn(ev.target.value);};
+                    lel.append(inp);return lel;
+                  })
+                ),
+                e('div',{style:{fontSize:'11px',color:'var(--txtd)',marginTop:'4px'}},
+                  (()=>{const avg=calcAvgDmg(w,S.save,size);return avg!=null?'\u2192 Avg dmg vs '+S.save+'+: '+avg.toFixed(2):'';})()
+                )
+              ));
+            });
+          } else {
+            body.append(wTable(dbUnit.weapons, S.save, size));
+          }
+          card.append(body);
+        }
+        c.append(card);
+      });
+    });
+  }
+
+  // Database modal
+  if(s.showModal){
+    const buildList=items=>{
+      const ml=e('div',{cls:'modal-list'});
+      if(!items.length){ml.append(e('div',{style:{textAlign:'center',padding:'20px',color:'var(--txtf)',fontStyle:'italic'}},'No units match.'));return ml;}
+      items.forEach(u=>{
+        const size=(u.size||1);
+        let bestDmg=null;
+        u.weapons.forEach(w=>{const av=calcAvgDmg(w,S.save,size);if(av!=null&&(bestDmg==null||av>bestDmg))bestDmg=av;});
+        const inRoster=a.units.find(x=>x.dbId===u.id);
+        const armyColor=ARMY_COLORS[u.army]||'#c9922a';
+        const dc=e('div',{cls:'db-card'},
+          e('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'5px',flexWrap:'wrap',gap:'5px'}},
+            e('div',{style:{display:'flex',alignItems:'center',gap:'7px',flexWrap:'wrap'}},
+              e('div',{style:{width:'7px',height:'7px',borderRadius:'2px',background:armyColor,flexShrink:'0'}}),
+              e('span',{style:{fontWeight:'600',fontSize:'13px',color:'var(--txt)'}},u.name),
+              e('span',{cls:'rtag rtag-'+u.role},u.role),
+              dmgBadge(bestDmg)
+            ),
+            e('div',{style:{display:'flex',alignItems:'center',gap:'8px'}},
+              e('span',{style:{color:'var(--txtd)',fontSize:'11px'}},u.faction),
+              e('span',{style:{color:'var(--gold)',fontWeight:'700',fontFamily:"'Cinzel',serif",fontSize:'12px'}},u.pts+' pts'),
+              (()=>{
+                const ab=e('button',{style:{background:inRoster?'var(--grn)':'linear-gradient(135deg,var(--goldd),var(--gold))',color:inRoster?'var(--txt)':'#0d0d10',border:'none',borderRadius:'3px',padding:'4px 10px',cursor:'pointer',fontWeight:'700',fontSize:'10px',letterSpacing:'1px',fontFamily:"'Cinzel',serif"}},inRoster?'+ Again':'+ Add');
+                ab.onclick=()=>{
+                  const ex=a.units.find(x=>x.dbId===u.id);
+                  if(ex){ex.count=(ex.count||1)+1;ex.pts=ex.basePts*ex.count;}
+                  else a.units.push({id:Date.now(),dbId:u.id,name:u.name,role:u.role,faction:u.faction,army:u.army,pts:u.pts,basePts:u.pts,count:1,weapons:u.weapons});
+                  rd();
+                };return ab;
+              })()
+            )
+          ),
+          wTable(u.weapons,S.save,size)
+        );
+        ml.append(dc);
+      });
+      return ml;
+    };
+    const getFiltered=()=>DB.filter(u=>{
+      const q=searchIn.value.toLowerCase();
+      return (!q||u.name.toLowerCase().includes(q)||u.faction.toLowerCase().includes(q))
+        &&(armySel.value==='All'||u.army===armySel.value)
+        &&(facSel.value==='All'||u.faction===facSel.value)
+        &&(rolSel.value==='All'||u.role===rolSel.value);
+    });
+    const searchIn=e('input',{type:'text',placeholder:'Search...',value:s.search,style:{background:'var(--surf2)',border:'1px solid var(--bdr)',color:'var(--txt)'}});
+    const armySel=e('select',{style:{background:'var(--surf2)',border:'1px solid var(--bdr)',color:'var(--txt)'}},...ARMIES.map(arm=>{const op=e('option',{value:arm},arm);if(arm===s.filterArmy)op.selected=true;return op;}));
+    const facSel=e('select',{style:{background:'var(--surf2)',border:'1px solid var(--bdr)',color:'var(--txt)'}});
+    const updateFacSel=()=>{facSel.innerHTML='';[e('option',{value:'All'},'All sub-factions'),...[...new Set(DB.filter(u=>u.army===armySel.value).map(u=>u.faction))].sort().map(f=>e('option',{value:f},f))].forEach(o=>facSel.append(o));};
+    updateFacSel();
+    const rolSel=e('select',{style:{background:'var(--surf2)',border:'1px solid var(--bdr)',color:'var(--txt)'}});
+    [e('option',{value:'All'},'All roles'),...ROLES.map(r=>e('option',{value:r},r))].forEach(o=>rolSel.append(o));
+    let listEl=buildList(getFiltered());
+    const refilter=()=>{const newList=buildList(getFiltered());listEl.replaceWith(newList);listEl=newList;};
+    searchIn.oninput=refilter;
+    armySel.onchange=()=>{s.filterArmy=armySel.value;updateFacSel();refilter();};
+    facSel.onchange=refilter; rolSel.onchange=refilter;
+    const modal=e('div',{cls:'modal'},
+      e('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'10px'}},
+        e('div',{style:{fontFamily:"'Cinzel',serif",fontWeight:'700',fontSize:'13px',color:'var(--gold)',letterSpacing:'2px',textTransform:'uppercase'}},'Unit Database'),
+        e('button',{style:{background:'none',border:'1px solid var(--bdr)',color:'var(--txtd)',borderRadius:'3px',padding:'4px 10px',cursor:'pointer',fontSize:'11px',fontFamily:"'Cinzel',serif"},onclick:()=>{s.showModal=false;rd();}},'\u2715 Close')
+      ),
+      e('div',{style:{display:'grid',gridTemplateColumns:'1fr 1fr 1fr 1fr',gap:'6px',marginBottom:'10px'}},searchIn,armySel,facSel,rolSel),
+      listEl
+    );
+    const ov=e('div',{cls:'modal-overlay'},modal);
+    ov.onclick=ev=>{if(ev.target===ov){s.showModal=false;rd();}};
+    c.append(ov);
+  }
+}
+
+// ── DICE TAB ────────────────────────────────────────────────────────────────
+function renderDice(c){
+  const s=S.dice;
+  const rd=()=>{c.innerHTML='';renderDice(c);};
+  c.append(e('div',{cls:'sec-title'},'\uD83C\uDFB2 Dice Roller'));
+  const dTypes=[4,6,8,10,12,20];
+  c.append(e('div',{style:{marginBottom:'14px'}},e('span',{cls:'lbl',style:{display:'block',marginBottom:'5px'}},'Dice Type'),e('div',{style:{display:'flex',gap:'5px',flexWrap:'wrap'}},...dTypes.map(d=>{const b=e('button',{style:{background:s.dtype===d?'var(--gold)':'var(--surf2)',border:'1px solid '+(s.dtype===d?'var(--gold)':'var(--bdr)'),color:s.dtype===d?'#0d0d10':'var(--txt)',borderRadius:'3px',padding:'5px 9px',cursor:'pointer',fontWeight:'700',fontSize:'12px',fontFamily:"'Cinzel',serif",transition:'all .2s'}},'D'+d);b.onclick=()=>{s.dtype=d;rd();};return b;}))));
+  const cr=e('div',{style:{display:'flex',gap:'10px',marginBottom:'14px',alignItems:'flex-end'}});
+  const ci=e('input',{type:'number',value:s.count,min:1,max:20,style:{width:'74px'}});ci.oninput=ev=>s.count=+ev.target.value;
+  const cl=e('label',{style:{display:'flex',flexDirection:'column',gap:'3px'}},e('span',{cls:'lbl'},'Count'),ci);
+  const rb=e('button',{cls:'btn btn-gold',style:{alignSelf:'flex-end'}},'Roll '+s.count+'d'+s.dtype);
+  rb.onclick=()=>{s.rolling=true;rd();setTimeout(()=>{s.results=rollN(s.count,s.dtype);s.history=[{rolls:s.results.slice(),type:s.dtype,total:s.results.reduce((a,b)=>a+b,0),time:new Date().toLocaleTimeString()},...s.history.slice(0,9)];s.rolling=false;rd();},400);};
+  cr.append(cl,rb);c.append(cr);
+  if(s.rolling){c.append(e('div',{cls:'dcard',style:{textAlign:'center',padding:'24px 0'}},e('div',{style:{fontSize:'32px',display:'inline-block',animation:'diceAnim .4s ease infinite'}},'\uD83C\uDFB2'),e('div',{style:{color:'var(--txtf)',fontSize:'10px',letterSpacing:'3px',textTransform:'uppercase',marginTop:'7px',fontFamily:"'Cinzel',serif"}},'Rolling...')));return;}
+  if(s.results.length){
+    const faces=['','\u2680','\u2681','\u2682','\u2683','\u2684','\u2685'];
+    const dw=e('div',{style:{display:'flex',flexWrap:'wrap',gap:'5px',marginBottom:'10px'}});
+    s.results.forEach((r,i)=>{
+      const isH=r>=s.dtype*.8,isL=r<=s.dtype*.2;
+      dw.append(e('div',{style:{width:'38px',height:'38px',borderRadius:'5px',background:isH?'rgba(201,146,42,.18)':isL?'rgba(192,57,43,.18)':'var(--surf2)',border:'2px solid '+(isH?'var(--gold)':isL?'var(--red2)':'var(--bdr)'),display:'flex',alignItems:'center',justifyContent:'center',fontSize:s.dtype===6?'22px':'13px',fontWeight:'700',color:isH?'var(--gold)':isL?'var(--red2)':'var(--txt)',fontFamily:s.dtype===6?'serif':"'Cinzel',serif",animation:'fadeIn .2s ease '+(i*.04)+'s both'}},s.dtype===6?faces[r]:r));
+    });
+    const tot=s.results.reduce((a,b)=>a+b,0);
+    const sr=e('div',{style:{display:'flex',gap:'18px',flexWrap:'wrap'}});
+    [['Total',tot,'var(--gold)'],['Avg',(tot/s.results.length).toFixed(1),'var(--txt)'],['High',Math.max(...s.results),'var(--gold)'],['Low',Math.min(...s.results),'var(--red2)']].forEach(([l,v,col])=>{
+      sr.append(e('div',{},e('span',{cls:'lbl'},l),e('span',{style:{fontFamily:"'Cinzel',serif",fontSize:'18px',fontWeight:'700',color:col}},v)));
+    });
+    c.append(e('div',{cls:'dcard',style:{marginBottom:'10px'}},dw,sr));
+  }
+  if(s.history.length){
+    c.append(e('div',{cls:'sep'},e('div',{cls:'sep-line'}),e('span',{cls:'sep-lbl'},'History'),e('div',{cls:'sep-line r'})));
+    s.history.forEach((h,i)=>{c.append(e('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'4px 7px',background:i===0?'var(--surf)':'transparent',border:i===0?'1px solid var(--bdr)':'1px solid transparent',borderRadius:'3px',opacity:Math.max(0.25,1-i*.09)}},e('span',{style:{color:'var(--txtf)',fontSize:'11px'}},h.time),e('span',{style:{color:'var(--txtd)',fontSize:'12px'}},h.rolls.length+'d'+h.type+': ['+h.rolls.join(', ')+']'),e('span',{style:{color:'var(--gold)',fontWeight:'700',fontFamily:"'Cinzel',serif",fontSize:'13px'}},'= '+h.total)));});
+  }
+}
+
+// ── MAIN RENDER ──────────────────────────────────────────────────────────────
+const TABS=[{id:'combat',icon:'\u2694',lbl:'Combat'},{id:'battle',icon:'\uD83E\uDE78',lbl:'Battle'},{id:'roster',icon:'\uD83D\uDCCB',lbl:'Roster'},{id:'dice',icon:'\uD83C\uDFB2',lbl:'Dice'}];
+function render(){
+  const app=document.getElementById('app');app.innerHTML='';
+  app.append(renderHeader());
+  app.append(e('div',{cls:'tabs'},...TABS.map(t=>{const b=e('button',{cls:'tab'+(S.tab===t.id?' on':'')},e('span',{cls:'tab-icon'},t.icon),t.lbl);b.onclick=()=>{S.tab=t.id;render();};return b;})));
+  const ct=e('div',{cls:'content'});
+  if(S.tab==='combat')renderCombat(ct);
+  else if(S.tab==='battle')renderBattle(ct);
+  else if(S.tab==='roster')renderRoster(ct);
+  else renderDice(ct);
+  app.append(ct);
+}
+render();
+</script>
+</body>
+</html>
