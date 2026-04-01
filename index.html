@@ -114,6 +114,20 @@ input[type=number]{-moz-appearance:textfield}input[type=number]::-webkit-inner-s
 .stat-chip span{color:var(--txtd);font-size:9px;text-transform:uppercase;letter-spacing:.5px}
 .big-val{font-family:'Cinzel',serif;font-size:34px;font-weight:900;color:var(--gold)}
 .stat-val{font-family:'Cinzel',serif;font-size:20px;font-weight:700}
+
+/* Ability cards */
+.ab-card{background:var(--surf2);border:1px solid var(--bdr);border-radius:4px;padding:8px 11px;margin-bottom:6px}
+.ab-card:last-child{margin-bottom:0}
+.ab-name{font-family:'Cinzel',serif;font-size:11px;font-weight:700;color:var(--txt);margin-bottom:3px}
+.ab-timing{display:inline-block;font-size:9px;padding:1px 6px;border-radius:3px;font-family:'Cinzel',serif;font-weight:700;letter-spacing:.5px;margin-bottom:4px}
+.ab-timing-passive{background:rgba(90,90,90,.3);color:var(--txtd)}
+.ab-timing-active{background:rgba(201,146,42,.15);color:var(--gold)}
+.ab-timing-spell{background:rgba(80,60,160,.25);color:#b08adf}
+.ab-section{font-size:11px;margin-bottom:3px;line-height:1.45}
+.ab-section span{color:var(--txtd);font-family:'Cinzel',serif;font-size:9px;letter-spacing:.5px;text-transform:uppercase;margin-right:5px}
+.ab-keywords{font-size:10px;color:#b08adf;font-style:italic;margin-top:2px}
+.unit-expand-btn{background:none;border:none;color:var(--txtd);cursor:pointer;font-size:10px;font-family:'Cinzel',serif;letter-spacing:1px;text-transform:uppercase;width:100%;text-align:center;padding:5px 0;margin-top:4px;transition:color .2s}
+.unit-expand-btn:hover{color:var(--gold)}
 </style>
 </head>
 <body>
@@ -319,6 +333,29 @@ function parseLibrary(doc, factionName) {
 
     if (weapons.length === 0) continue;
 
+    // Unit abilities
+    const abilities = [];
+    const seenAbils = new Set();
+    const ABIL_TYPES = ['Ability (Passive)', 'Ability (Activated)', 'Ability (Spell)'];
+    for (const prof of profileEls) {
+      const tname = prof.getAttribute('typeName') || '';
+      if (!ABIL_TYPES.includes(tname)) continue;
+      const aName = prof.getAttribute('name') || '';
+      if (!aName || seenAbils.has(aName)) continue;
+      seenAbils.add(aName);
+      const clean = s => (s||'').replace(/\*\*\^\^([^^]+)\^\^\*\*/g,'$1').replace(/\*\*/g,'').replace(/\^\^/g,'').trim();
+      const ab = {
+        name: aName,
+        type: tname,
+        timing:    clean(charVal(prof,'Timing')),
+        castValue: clean(charVal(prof,'Casting Value')),
+        declare:   clean(charVal(prof,'Declare')),
+        effect:    clean(charVal(prof,'Effect')),
+        keywords:  clean(charVal(prof,'Keywords')),
+      };
+      abilities.push(ab);
+    }
+
     // Unit size from min constraint
     let size = 1;
     const constraints = entry.getElementsByTagName('constraint');
@@ -336,7 +373,7 @@ function parseLibrary(doc, factionName) {
       faction: factionName,
       role, pts: 0, size,
       health, save, move, control,
-      weapons,
+      weapons, abilities,
     });
   }
 
@@ -858,20 +895,53 @@ function renderRoster(c) {
     ));
     const body = e('div',{cls:'regiment-body'});
 
+    // Helper: render a filled unit row with per-unit expand
+    const cachedUnits = FACTION_CACHE[a.army]||[];
+
+    function renderUnitRow(unitData, slotKey, onRemove, isHeroSlot) {
+      const dbU = cachedUnits.find(u=>u.name===unitData.name);
+      const dmg = dbU?bestDmg(dbU,S.save):null;
+      const expKey = key+'-'+slotKey;
+      const unitExp = !!s.expanded[expKey];
+
+      const wrap = e('div',{style:{marginBottom:'5px'}});
+
+      // Compact row — click anywhere except remove to toggle
+      const rowCls = isHeroSlot ? 'regiment-hero' : 'regiment-unit';
+      const row = e('div',{cls:rowCls,style:{cursor:'pointer',userSelect:'none'}},
+        e('div',{style:{display:'flex',alignItems:'center',gap:'7px',flex:'1',flexWrap:'wrap',minWidth:'0'}},
+          isHeroSlot ? e('span',{style:{fontSize:'11px',color:'var(--gold)',fontFamily:"'Cinzel',serif",flexShrink:'0'}},'\u2605 HERO') : roleTag(unitData.role),
+          e('span',{style:{fontWeight:'600',fontSize:'13px'}},unitData.name),
+          e('span',{style:{color:'var(--txtd)',fontSize:'11px'}},unitData.pts+' pts'),
+          dmg!=null?dmgBadge(dmg):null,
+          e('span',{style:{color:'var(--txtf)',fontSize:'10px',marginLeft:'auto'}},unitExp?'\u25b2':'\u25bc')
+        ),
+        (()=>{
+          const b=e('button',{style:{background:'none',border:'none',color:'var(--txtf)',cursor:'pointer',fontSize:'14px',flexShrink:'0'}},'\u2715');
+          b.onclick=ev=>{ev.stopPropagation();onRemove();};
+          return b;
+        })()
+      );
+      row.onclick = () => { s.expanded[expKey]=!unitExp; rd(); };
+      wrap.append(row);
+
+      // Expandable detail panel
+      if(unitExp && dbU) {
+        const detail = e('div',{style:{background:'var(--surf)',border:'1px solid var(--bdr)',borderTop:'none',borderRadius:'0 0 4px 4px',padding:'10px 12px',marginTop:'-5px',marginBottom:'0'}});
+        detail.append(e('div',{style:{color:'var(--gold)',fontFamily:"'Cinzel',serif",fontSize:'10px',letterSpacing:'2px',textTransform:'uppercase',marginBottom:'4px'}},'Weapons'));
+        detail.append(wTable(dbU.weapons, S.save, dbU.size));
+        if(dbU.abilities && dbU.abilities.length) {
+          detail.append(e('div',{style:{color:'var(--gold)',fontFamily:"'Cinzel',serif",fontSize:'10px',letterSpacing:'2px',textTransform:'uppercase',margin:'10px 0 4px'}},'Abilities ('+dbU.abilities.length+')'));
+          detail.append(abilityPanel(dbU.abilities));
+        }
+        wrap.append(detail);
+      }
+      return wrap;
+    }
+
     // Hero slot
     if(reg.hero) {
-      const cachedUnits = FACTION_CACHE[a.army]||[];
-      const dbU = cachedUnits.find(u=>u.name===reg.hero.name);
-      const dmg = dbU?bestDmg(dbU,S.save):null;
-      body.append(e('div',{cls:'regiment-hero'},
-        e('div',{style:{display:'flex',alignItems:'center',gap:'8px',flex:'1',flexWrap:'wrap',minWidth:'0'}},
-          e('span',{style:{fontSize:'11px',color:'var(--gold)',fontFamily:"'Cinzel',serif",flexShrink:'0'}},'\u2605 HERO'),
-          e('span',{style:{fontWeight:'600',fontSize:'13px'}},reg.hero.name),
-          e('span',{style:{color:'var(--txtd)',fontSize:'11px'}},reg.hero.pts+' pts'),
-          dmg!=null?dmgBadge(dmg):null
-        ),
-        (()=>{const b=e('button',{style:{background:'none',border:'none',color:'var(--txtf)',cursor:'pointer',fontSize:'14px',flexShrink:'0'}},'\u2715');b.onclick=()=>{reg.hero=null;rd();};return b;})()
-      ));
+      body.append(renderUnitRow(reg.hero, 'hero', ()=>{reg.hero=null;rd();}, true));
     } else {
       const he = e('div',{cls:'regiment-hero-empty'},'\u2605 Click to select Hero');
       he.onclick = () => { s.modal={armyId:a.id,regIdx:ri,slot:'hero'}; s.showModal=true; rd(); };
@@ -882,40 +952,12 @@ function renderRoster(c) {
     for(let si=0;si<3;si++) {
       const unit = reg.units[si];
       if(unit) {
-        const cachedUnits = FACTION_CACHE[a.army]||[];
-        const dbU = cachedUnits.find(u=>u.name===unit.name);
-        const dmg = dbU?bestDmg(dbU,S.save):null;
-        body.append(e('div',{cls:'regiment-unit'},
-          e('div',{style:{display:'flex',alignItems:'center',gap:'7px',flex:'1',flexWrap:'wrap',minWidth:'0'}},
-            roleTag(unit.role),
-            e('span',{style:{fontWeight:'600',fontSize:'13px'}},unit.name),
-            e('span',{style:{color:'var(--txtd)',fontSize:'11px'}},unit.pts+' pts'),
-            dmg!=null?dmgBadge(dmg):null
-          ),
-          (()=>{const b=e('button',{style:{background:'none',border:'none',color:'var(--txtf)',cursor:'pointer',fontSize:'14px',flexShrink:'0'}},'\u2715');b.onclick=()=>{reg.units[si]=null;rd();};return b;})()
-        ));
+        body.append(renderUnitRow(unit, 'u'+si, ()=>{reg.units[si]=null;rd();}, false));
       } else {
         const sl = e('div',{cls:'regiment-unit-slot'},'+ Slot '+(si+1)+' \u2014 click to add unit');
         sl.onclick = () => { s.modal={armyId:a.id,regIdx:ri,slot:si}; s.showModal=true; rd(); };
         body.append(sl);
       }
-    }
-
-    // Weapon profile toggle
-    const exp = s.expanded[key];
-    const tog2 = e('button',{style:{background:'none',border:'none',color:'var(--txtd)',cursor:'pointer',fontSize:'10px',fontFamily:"'Cinzel',serif",letterSpacing:'1px',textTransform:'uppercase',marginTop:'6px',width:'100%',textAlign:'center'}},exp?'\u25b2 Hide weapons':'\u25bc Show weapon profiles');
-    tog2.onclick = () => { s.expanded[key]=!exp; rd(); };
-    body.append(tog2);
-    if(exp) {
-      const cachedUnits = FACTION_CACHE[a.army]||[];
-      [reg.hero,...reg.units].filter(Boolean).forEach(u => {
-        const dbU = cachedUnits.find(d=>d.name===u.name);
-        if(!dbU) return;
-        body.append(e('div',{style:{marginTop:'8px'}},
-          e('div',{style:{fontFamily:"'Cinzel',serif",fontSize:'11px',color:'var(--txtd)',letterSpacing:'1px',textTransform:'uppercase',marginBottom:'2px'}},u.name),
-          wTable(dbU.weapons,S.save,dbU.size)
-        ));
-      });
     }
 
     regCard.append(body);
@@ -974,6 +1016,7 @@ function renderRoster(c) {
           listEl.append(e('div',{style:{textAlign:'center',padding:'20px',color:'var(--txtf)',fontStyle:'italic'}},'No units match.'));
           return;
         }
+        const expandedUnits = new Set();
         filtered.forEach(u => {
           const dmg = bestDmg(u,S.save);
           const addBtn = e('button',{cls:'btn btn-gold',style:{padding:'4px 12px',fontSize:'10px'}},'+ Add');
@@ -984,12 +1027,18 @@ function renderRoster(c) {
             s.showModal=false; s.modal=null; rd();
           };
           // Unit stats chips
-          const statsRow = e('div',{style:{display:'flex',gap:'5px',flexWrap:'wrap',marginTop:'5px',marginBottom:'5px'}});
+          const statsRow = e('div',{style:{display:'flex',gap:'5px',flexWrap:'wrap',marginTop:'4px',marginBottom:'4px'}});
           if(u.health)  statsRow.append(e('div',{cls:'stat-chip'},e('span',{},'HP'),u.health));
           if(u.save)    statsRow.append(e('div',{cls:'stat-chip'},e('span',{},'SV'),u.save));
           if(u.move)    statsRow.append(e('div',{cls:'stat-chip'},e('span',{},'MV'),u.move));
           if(u.size>1)  statsRow.append(e('div',{cls:'stat-chip'},e('span',{},'SIZE'),u.size));
-          listEl.append(e('div',{cls:'db-card'},
+
+          const cardEl = e('div',{cls:'db-card'});
+          const bodyEl = e('div',{});
+          const detailEl = e('div',{style:{display:'none'}});
+
+          // Header
+          bodyEl.append(
             e('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:'5px',marginBottom:'4px'}},
               e('div',{style:{display:'flex',alignItems:'center',gap:'7px',flexWrap:'wrap'}},
                 roleTag(u.role),
@@ -1001,9 +1050,26 @@ function renderRoster(c) {
                 addBtn
               )
             ),
-            statsRow,
-            wTable(u.weapons,S.save,u.size)
-          ));
+            statsRow
+          );
+
+          // Expand button
+          const expBtn = e('button',{cls:'unit-expand-btn'},'▼ Weapons & Abilities');
+          let expanded = false;
+          expBtn.onclick = () => {
+            expanded = !expanded;
+            expBtn.textContent = expanded ? '▲ Hide details' : '▼ Weapons & Abilities';
+            detailEl.style.display = expanded ? 'block' : 'none';
+          };
+          bodyEl.append(expBtn);
+
+          // Detail panel (hidden by default)
+          const sep1 = e('div',{style:{color:'var(--gold)',fontFamily:"'Cinzel',serif",fontSize:'10px',letterSpacing:'2px',textTransform:'uppercase',margin:'8px 0 4px'}},'Weapons');
+          const sep2 = e('div',{style:{color:'var(--gold)',fontFamily:"'Cinzel',serif",fontSize:'10px',letterSpacing:'2px',textTransform:'uppercase',margin:'10px 0 4px'}},'Abilities ('+(u.abilities?.length||0)+')');
+          detailEl.append(sep1, wTable(u.weapons,S.save,u.size), sep2, abilityPanel(u.abilities));
+
+          cardEl.append(bodyEl, detailEl);
+          listEl.append(cardEl);
         });
       }
 
@@ -1040,6 +1106,42 @@ function renderDice(c) {
     s.history.forEach((h,i)=>c.append(e('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'4px 7px',background:i===0?'var(--surf)':'transparent',border:i===0?'1px solid var(--bdr)':'1px solid transparent',borderRadius:'3px',opacity:String(Math.max(0.25,1-i*.09))}},e('span',{style:{color:'var(--txtf)',fontSize:'11px'}},h.time),e('span',{style:{color:'var(--txtd)',fontSize:'12px'}},h.rolls.length+'d'+h.type+': ['+h.rolls.join(', ')+']'),e('span',{style:{color:'var(--gold)',fontWeight:'700',fontFamily:"'Cinzel',serif",fontSize:'13px'}},'= '+h.total))));
   }
 }
+
+// ── Ability panel builder ───────────────────────────────────────────────────
+function abilityPanel(abilities) {
+  if (!abilities || !abilities.length) {
+    return e('div',{style:{color:'var(--txtf)',fontSize:'12px',fontStyle:'italic',padding:'6px 0'}},'No abilities listed.');
+  }
+  const wrap = e('div',{style:{marginTop:'6px'}});
+  abilities.forEach(ab => {
+    const card = e('div',{cls:'ab-card'});
+    card.append(e('div',{cls:'ab-name'}, ab.name));
+
+    // Timing badge
+    let timingCls = 'ab-timing-active';
+    let timingLabel = ab.timing || '';
+    if (!timingLabel || timingLabel === '-') { timingCls='ab-timing-passive'; timingLabel='Passive'; }
+    else if (ab.type.includes('Spell')) { timingCls='ab-timing-spell'; }
+    if (timingLabel && timingLabel !== '-') {
+      card.append(e('div',{cls:'ab-timing '+timingCls}, timingLabel));
+    }
+    if (ab.castValue && ab.castValue !== '-') {
+      card.append(e('div',{cls:'ab-section'},e('span',{},'Cast'),ab.castValue));
+    }
+    if (ab.declare && ab.declare !== '-' && ab.declare !== '') {
+      card.append(e('div',{cls:'ab-section'},e('span',{},'Declare'),ab.declare));
+    }
+    if (ab.effect && ab.effect !== '-' && ab.effect !== '') {
+      card.append(e('div',{cls:'ab-section'},e('span',{},'Effect'),ab.effect));
+    }
+    if (ab.keywords && ab.keywords !== '-' && ab.keywords !== '') {
+      card.append(e('div',{cls:'ab-keywords'},ab.keywords));
+    }
+    wrap.append(card);
+  });
+  return wrap;
+}
+
 
 // ── Main render ─────────────────────────────────────────────────────────────
 const TABS=[{id:'combat',icon:'\u2694',lbl:'Combat'},{id:'battle',icon:'\uD83E\uDE78',lbl:'Battle'},{id:'roster',icon:'\uD83D\uDCCB',lbl:'Roster'},{id:'dice',icon:'\uD83C\uDFB2',lbl:'Dice'}];
